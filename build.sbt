@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka"   %%  "akka-slf4j"					%	akkaVersion       %   "test",
   "org.scalatest"       %%  "scalatest" 				    %   "2.1.3"      	%   "test",
   "ch.qos.logback"      %   "logback-classic"				%   "1.1.2",
-  "net.debasishg"		%	"redisclient_2.10"				%	"2.12"
+  "net.debasishg"		    %	  "redisclient_2.10"				%	"2.12"
   //"redis.clients"		    %   "jedis"   							%   "2.4.2"
 )     
 

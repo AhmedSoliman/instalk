@@ -10,7 +10,7 @@ object ClientManager {
 class ClientManager extends Actor with ActorLogging {
   def receive = {
     case ClientManager.CreateClient(r) =>
-      val actor = context.actorOf(Props(new WebSocketActor(r)), "client-" + Math.abs(Random.nextInt))
+      val actor = context.actorOf(Props(new WebSocketActor(r, Client.props)), "client-" + Math.abs(Random.nextInt))
       actor.tell(WebSocketActor.GetActuator, sender)
   }
 }

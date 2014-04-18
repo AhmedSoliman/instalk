@@ -2,10 +2,17 @@
   
   // Initialization
   CLIENT: {"v": "0.1"}
-  SERVER: {"v": "0.1", "s":"e71BB8"} //your user generated id (might be attached to your user)
+  SERVER: {"welcome": 1} //your user generated id (might be attached to your user)
   //Errors; unsupported version, eror should contain list of supported versions
   {"o": "connect-failed", "reason": {/* errors */}}
-  
+
+  {"timeout": 1}
+
+
+  //HEART BEAT
+  {"heart-beat": 1}
+  {"heart-beat-ack": 1}
+
   // Rooms
   CLIENT: {"r": "8BjK8", "o": "join"} //wants to join the room
   SERVER: {"r": "8BjK8", "o": "joined"} //errors is optional

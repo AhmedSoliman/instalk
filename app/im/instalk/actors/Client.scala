@@ -6,19 +6,20 @@ import play.api.libs.json._
 
 
 object Client {
-  trait State
-  case object New extends State
-  case object Anonymous extends State
-  case object Authenticated extends State
+  def props(r: RequestHeader, socket: ActorRef): Props = Props(new Client(r, socket))
 
-
-  trait Data
-  case class Rooms(rooms: Map[String, ActorRef])
-
+  case class Response(msg: JsObject)
   case class Request(msg: JsObject)
 
 }
 
-class Client(r: Headers) extends FSM[Client.State, Client.Data] {
+class Client(r: RequestHeader, socket: ActorRef) extends Actor with ActorLogging {
+  var rooms = Map.empty[String, ActorRef]
 
+  def receive = {
+    case Client.Request(msg) =>
+      //handle
+    case Client.Response(msg) =>
+      socket ! WebSocketActor.Send(msg)
+  }
 }
