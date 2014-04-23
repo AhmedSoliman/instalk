@@ -2,7 +2,7 @@
   
   // Initialization
   CLIENT: {"v": "0.1"}
-  SERVER: {"welcome": 1} //your user generated id (might be attached to your user)
+  SERVER: {"welcome": 1, "user": {/* identified user */} }} //your user generated id (might be attached to your user)
   //Errors; unsupported version, eror should contain list of supported versions
   {"o": "connect-failed", "reason": {/* errors */}}
 
@@ -10,20 +10,31 @@
 
 
   //HEART BEAT
-  {"heart-beat": 1}
-  {"heart-beat-ack": 1}
+  {"heart-beat": 1} //1 can be any number
+  {"heart-beat-ack": 1} //returns the same number
 
   // Rooms
   CLIENT: {"r": "8BjK8", "o": "join"} //wants to join the room
-  SERVER: {"r": "8BjK8", "o": "joined"} //errors is optional
-  SERVER: {"r": "8BjK8", "o": "join-failed", "reason": {/* error */}}
-  
+
   //Server then will synchronize the member list and replay the last 50 messages to you
-  SERVER: {"r": "8BjK8", "o": "sync", "data": {
+  SERVER: {"r": "8BjK8", "o": "room-welcome", "data": {
       "members" : [/*identity*/],
-      "messages": [{/*Messages*/}]
   }
-  
+
+  OR
+
+  SERVER: {"r": "8BjK8", "o": "join-failed", "reason": {/* error */}}
+
+
+  //SYNC MESSAGES
+  CLIENT: {"r": "8BjK8", "o": "sync", "data": {
+    "from": seqNr
+  }
+
+  SERVER: {"r": "8BjK8", "o": "sync", "data" {
+    "messages": []
+  }
+
   // Events
   CLIENT: {"r": "8BjK8", "o": "bt"} //server will distribute as is (begin typing) (o: Operation) (r: Room)
   CLIENT: {"r": "8BjK8", "o": "st"} //server will distribute as is (stop typing)
@@ -65,4 +76,5 @@
   //Disconnected, Server will distribute this even if the client channel got closed
   {"r": "8BjK8", "sid": "66Gb771399", "o": "disconnect", "time": "ISO-DateTime in EJSON format"}
   
-  // Identity
+  // Identified User
+  {"username": "AhmedSoliman", "color": "#22BBFF", verified: false}

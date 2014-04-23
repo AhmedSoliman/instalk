@@ -13,6 +13,7 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8", "-featur
 libraryDependencies ++= Seq(
   //"com.typesafe.akka"	%%	"akka-actor"					%	akkaVersion,
   "com.typesafe.akka"	%%	"akka-cluster"					%	akkaVersion,
+  "com.typesafe.akka"	%%	"akka-contrib"					%	akkaVersion,
   "com.typesafe.akka"	%%	"akka-testkit"					%	akkaVersion,
   "com.typesafe.akka"   %%  "akka-slf4j"					%	akkaVersion       %   "test",
   "org.scalatest"       %%  "scalatest" 				    %   "2.1.3"      	%   "test",

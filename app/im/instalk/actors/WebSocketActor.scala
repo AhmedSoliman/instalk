@@ -7,6 +7,7 @@ import play.api.libs.json._
 import im.instalk.protocol._
 import scala.concurrent.duration._
 import java.util.concurrent.atomic.AtomicReference
+import im.instalk.User
 
 object WebSocketActor {
   case object GetActuator
@@ -17,7 +18,7 @@ object WebSocketActor {
 
 }
 
-class WebSocketActor(r: RequestHeader, clientProps: (RequestHeader, ActorRef) => Props) extends Actor with ActorLogging {
+class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteAddress: String) extends Actor with ActorLogging {
   import WebSocketActor._
   implicit val ec = context.dispatcher
 
@@ -28,9 +29,9 @@ class WebSocketActor(r: RequestHeader, clientProps: (RequestHeader, ActorRef) =>
     self ! Receive(msg.as[JsObject]) //hidden assumption that we can translate every message to JsObject
   }.map(_ => context.stop(self)) //when iteratee is done
 
-  protected val client = context.actorOf(clientProps(r, self))
+  protected val client = context.actorOf(clientProps(user, self))
 
-  log.info("WebSocketActor created for client at ({})", r.remoteAddress)
+  log.info("WebSocketActor created for client at ({})", remoteAddress)
 
   private[this] val terminationGun = context.system.scheduler.scheduleOnce(10.seconds, self, Bored)
 
@@ -47,7 +48,7 @@ class WebSocketActor(r: RequestHeader, clientProps: (RequestHeader, ActorRef) =>
           else {
             terminationGun.cancel()
             //let's send him a welcome message and become initialized
-            send(Responses.Welcome)
+            send(Responses.Welcome(user))
             //context.setReceiveTimeout(30.seconds) //TODO: ENABLE HEART-BEAT
             context.become(initialized)
           }
@@ -57,7 +58,7 @@ class WebSocketActor(r: RequestHeader, clientProps: (RequestHeader, ActorRef) =>
     case Bored =>
      //terminate the socket, send a message
     send(Responses.Timeout)
-      log.info("Client Timeout (BORED) –– (uninitialized) at {}", r.remoteAddress)
+      log.info("Client Timeout (BORED) –– (uninitialized) at {}", remoteAddress)
       context.stop(self)
 
   }
@@ -78,7 +79,7 @@ class WebSocketActor(r: RequestHeader, clientProps: (RequestHeader, ActorRef) =>
     case ReceiveTimeout =>
       //terminate the socket, send a message
       send(Responses.Timeout)
-      log.info("Client Timeout (dying) at {}", r.remoteAddress)
+      log.info("Client Timeout (dying) at {}", remoteAddress)
       context.stop(self)
 
   }
@@ -88,7 +89,7 @@ class WebSocketActor(r: RequestHeader, clientProps: (RequestHeader, ActorRef) =>
 
   override def postStop = {
     channel.eofAndEnd()
-    log.info("Client disconnected at {}", r.remoteAddress)
+    log.info("Client disconnected at {}", remoteAddress)
     super.postStop
   }
 }
