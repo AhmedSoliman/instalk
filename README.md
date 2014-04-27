@@ -1,4 +1,5 @@
-instalk
+Instalk
 =======
+![](https://api.travis-ci.org/AhmedSoliman/instalk.svg)
 
-Group Chat App
+Open Source Group Chat Application built with Play + Akka
