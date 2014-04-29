@@ -18,15 +18,24 @@ package im.instalk.actors
 import akka.actor._
 import im.instalk.protocol.{RoomId}
 import im.instalk.User
+import im.instalk.global.Instalk
+import com.codahale.metrics.{Gauge, MetricRegistry}
+import im.instalk.store.Persistence
 
 object RoomManager {
   case class JoinOrCreate(r: RoomId, u: User)
 }
 
-class RoomManager extends Actor with ActorLogging {
+class RoomManager(persistence: Persistence) extends Actor with ActorLogging {
   import RoomManager._
   //respond to sender, wrap in Client.Response()
   var rooms = Map.empty[RoomId, ActorRef]
+
+  val roomsMeter = Instalk.metrics.meter(MetricRegistry.name(classOf[RoomManager], "rooms.created"))
+  val liveRooms = Instalk.metrics.register(MetricRegistry.name(classOf[RoomManager], "rooms.alive"),
+    new Gauge[Int] {
+      override def getValue(): Int = rooms.size
+    })
 
   def receive = {
     case msg @ JoinOrCreate(r, u) =>
@@ -45,7 +54,8 @@ class RoomManager extends Actor with ActorLogging {
 
   def createRoom(r: RoomId): ActorRef = {
     //TODO: some crazy distribution algorithm goes here
-    val room = context.actorOf(Props(new Room(r)), name = r)
+    val room = context.actorOf(Props(new Room(r, persistence)), name = r)
+    roomsMeter.mark()
     rooms += (r -> room)
     context watch room
     room

@@ -118,7 +118,13 @@ The fields of the object `Message` is subject to change in the future, now it on
   "attachments":[/*attachment*/]
 }
 ```
+## Persistent Events
+When you send a message to the room, it gets persisted in the Cassandra store, this is not true only for messages but also for the following Events
 
+  - Identification Request
+  - Setting Topic
+
+Those events take a sequence number same as messages so they can be traversed and replayed by the server
 
 #### Proposed Ideas [Under Development/Disabled By Default]
 

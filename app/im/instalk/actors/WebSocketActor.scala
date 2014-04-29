@@ -24,6 +24,8 @@ import scala.concurrent.duration._
 import java.util.concurrent.atomic.AtomicReference
 import im.instalk.User
 import java.util.concurrent.TimeUnit
+import im.instalk.global.Instalk
+import com.codahale.metrics.MetricRegistry
 
 object WebSocketActor {
   case object GetActuator
@@ -39,6 +41,8 @@ class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteA
   import play.api.Play.current
   implicit val ec = context.dispatcher
 
+  val requestsMeter = Instalk.metrics.meter(MetricRegistry.name(classOf[WebSocketActor], "requests.initialised"))
+  val uninitRequestsMeter = Instalk.metrics.meter(MetricRegistry.name(classOf[WebSocketActor], "requests.uninitialised"))
 
   private[this] val (enum, channel) = Concurrent.broadcast[String]
 
@@ -53,7 +57,7 @@ class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteA
 
   protected val client = context.actorOf(clientProps(user, self))
 
-  log.info("WebSocketActor created for client at ({})", remoteAddress)
+  log.debug("WebSocketActor created for client at ({})", remoteAddress)
   val idleTerminationPeriod: FiniteDuration = current.configuration.getMilliseconds("instalk.websocket.idle-terminate-grace-period").map(Duration(_, TimeUnit.MILLISECONDS)).getOrElse(10.seconds)
   private[this] val terminationGun = context.system.scheduler.scheduleOnce(idleTerminationPeriod, self, Bored)
 
@@ -62,6 +66,7 @@ class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteA
       sender ! WebSocketActor.Actuator((iteratee, enum))
 
     case Receive(msg) =>
+      uninitRequestsMeter.mark()
       msg.validate(Validators.version) match {
         case JsSuccess(version, _) =>
           //check if the version is correct
@@ -87,6 +92,7 @@ class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteA
 
   def initialized: Receive = {
     case Receive(msg) =>
+      requestsMeter.mark()
       // handle HEART-BEAT
       msg.validate(Validators.heartbeat) match {
         case JsSuccess(i, _) =>

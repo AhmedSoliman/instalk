@@ -43,6 +43,10 @@ with Matchers with PlayServer with Helpers {
   }
   it should "inform others that I joined the room" in {
     val room = "Soliman"
+    //delete the history first
+    import im.instalk.global.Instalk
+    Instalk.persistence().dropRoomHistory(room)
+
     withSocket(true) {
       (client1, probe1) =>
         val user1 = initialise(client1, probe1)

@@ -21,6 +21,7 @@ import im.instalk.protocol._
 import im.instalk.actors.RoomManager.JoinOrCreate
 import play.api.libs.json._
 import org.joda.time.DateTime
+import im.instalk.store.Persistence
 
 object Room {
 
@@ -31,9 +32,10 @@ object Room {
 }
 
 
-class Room(roomId: RoomId) extends Actor with ActorLogging {
+class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLogging {
   log.info("Room {} created", roomId)
-  var seqNr = 0l
+  var seqNr = persistence.getNextAvailableSeqNr(roomId).getOrElse(0l)
+  var topic = persistence.getTopic(roomId).getOrElse("")
   var members = Map.empty[ActorRef, User]
 
   def receive = {
@@ -56,8 +58,9 @@ class Room(roomId: RoomId) extends Actor with ActorLogging {
     case o: BroadcastMessageRequest =>
       members.get(sender) match {
         case Some(user) =>
-          //TODO: Store the message
-          publish(Responses.roomMessage(RoomMessage(roomId, SeqEnvelope(seqNr, user, o.data, DateTime.now()))))
+          val data = Responses.roomMessage(RoomMessage(roomId, SeqEnvelope(seqNr, user, o.data, DateTime.now())))
+          publish(data)
+          persistence.storeEvent(roomId, seqNr, "msg", data, topic,  members.values)
           seqNr += 1
         case None =>
           send(sender, Errors.notMemberInRoom)

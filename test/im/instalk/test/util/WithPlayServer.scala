@@ -26,7 +26,8 @@ import akka.testkit._
 trait PlayServer extends BeforeAndAfterAll {
   this: TestKit with Suite with ImplicitSender =>
 
-  val app: FakeApplication = FakeApplication()
+  val app: FakeApplication = FakeApplication(additionalConfiguration = Map("instalk.cassandra.table" -> "messagesTest"))
+
   val port = Helpers.testServerPort
 
   implicit def implicitApp = app
