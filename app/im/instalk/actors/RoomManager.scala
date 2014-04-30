@@ -23,11 +23,15 @@ import com.codahale.metrics.{Gauge, MetricRegistry}
 import im.instalk.store.Persistence
 
 object RoomManager {
+
   case class JoinOrCreate(r: RoomId, u: User)
+
 }
 
 class RoomManager(persistence: Persistence) extends Actor with ActorLogging {
+
   import RoomManager._
+
   //respond to sender, wrap in Client.Response()
   var rooms = Map.empty[RoomId, ActorRef]
 
@@ -38,13 +42,15 @@ class RoomManager(persistence: Persistence) extends Actor with ActorLogging {
     })
 
   def receive = {
-    case msg @ JoinOrCreate(r, u) =>
+    case msg@JoinOrCreate(r, u) =>
       //do we know that room?
       val room = (rooms.get(r).getOrElse(createRoom(r)))
       room forward msg
     case Terminated(room) =>
       //room was terminated, remove from the map, advertise on log
-      val result = rooms.find { case (r, a) => a == room }
+      val result = rooms.find {
+        case (r, a) => a == room
+      }
       result.foreach {
         case (r, a) =>
           rooms -= r
