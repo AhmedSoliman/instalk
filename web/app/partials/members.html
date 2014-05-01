@@ -1,0 +1,9 @@
+        <div id="members-box" class="col-md-3">
+          <div id="myself">
+            <div class="user-color" style="background-color: {{user.color}}"></div>
+             <span>{{user.username}}</span>
+          </div>
+          <ul id="member-list" ng-repeat="member in members">
+            <li><div class="user-color" style="background-color: {{member.color}}"></div> {{member.username}}</li>
+          </ul>
+        </div>

@@ -1,36 +1,23 @@
-<div class="header">
-  <ul class="nav nav-pills pull-right">
-    <li class="active"><a ng-href="#">Home</a></li>
-    <li><a ng-href="#">About</a></li>
-    <li><a ng-href="#">Contact</a></li>
-  </ul>
-  <h3 class="text-muted">web</h3>
-</div>
+    <div id="chat-window" class="container-fluid" ng-blur="away()">
+      <div id="loader" class="row">
+        <div class="col-md-offset-5 col-md-2 bg-info text-center" ng-show="socket.isConnected()">
+          Connected: <strong>{{ socket.isConnected() }}</strong> - Initialised: <strong>{{ socket.isInitialised() }}</strong>
+        </div>
+      </div>
+      <div class="row">
+        <div ng-include src="'partials/messages.html'"></div>
 
-<div class="jumbotron">
-  <h1>'Allo, 'Allo!</h1>
-  <p class="lead">
-    <img src="images/yeoman.png" alt="I'm Yeoman"><br>
-    Always a pleasure scaffolding your apps.
-  </p>
-  <p><a class="btn btn-lg btn-success" ng-href="#">Splendid!</a></p>
-</div>
+        <div ng-include src="'partials/members.html'"></div>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+        <form role"form" class="form-inline"></form>
+          <input for="message" class="form-control" placeholder="Say Something..." type="text" />
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-primary">Send</button>
+        </div>
+        <div class="col-md-3"></div>
 
-<div class="row marketing">
-  <h4>HTML5 Boilerplate</h4>
-  <p>
-    HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.
-  </p>
-
-  <h4>Angular</h4>
-  <p>
-    AngularJS is a toolset for building the framework most suited to your application development.
-  </p>
-
-  <h4>Karma</h4>
-  <p>Spectacular Test Runner for JavaScript.</p>
-</div>
-
-<div class="footer">
-  <p>♥ from the Yeoman team</p>
-</div>
+      </div>
+    </div>
