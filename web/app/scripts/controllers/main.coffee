@@ -5,7 +5,7 @@ Array::toDict = (key) ->
 
 
 Instalk.myApp
-  .controller 'MainCtrl', ($scope, $log, $routeParams, InstalkProtocol) ->
+  .controller 'MainCtrl', ['$scope', '$log', '$routeParams', 'InstalkProtocol', ($scope, $log, $routeParams, InstalkProtocol) ->
     $scope.addRandomMember = () -> $scope.members.push("ZAKI" + Math.round(Math.random() * 100))
     $scope.roomId = $routeParams.roomId
     $scope.socket = InstalkProtocol
@@ -45,3 +45,4 @@ Instalk.myApp
       $log.debug("SENDING:" + $scope.msg)
       InstalkProtocol.sendMessage($scope.roomId, $scope.msg)
       $scope.msg = ""
+    ]

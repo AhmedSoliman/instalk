@@ -1,7 +1,7 @@
 'use strict'
 
 Instalk.myApp
-  .factory 'InstalkProtocol', ($log, WebSocket) ->
+  .factory 'InstalkProtocol', ['$log', 'WebSocket', ($log, WebSocket) ->
     protocol = Instalk.Protocol
     messages = {}
     connected = false
@@ -85,5 +85,6 @@ Instalk.myApp
 
     onMessage: (callback) ->
       callbacks.message.push callback
+    ]
 
 
