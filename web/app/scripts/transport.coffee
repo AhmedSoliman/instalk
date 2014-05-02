@@ -3,8 +3,10 @@
 Instalk.myApp
   .factory 'InstalkProtocol', ($log, WebSocket) ->
     protocol = Instalk.Protocol
+    messages = {}
     connected = false
     initialised = false
+    inRoom = false
     user = null
     callbacks =
       welcome: []
@@ -37,11 +39,7 @@ Instalk.myApp
         $log.debug "I'm: #{user}"
         callback user for callback in callbacks.welcome
       else
-        $log.error "Handling:"
-        $log.error data
-        $log.error "WHILE:"
-        $log.error ev.data
-        event = protocol.handleMessage(data, callbacks)
+        event = protocol.handleMessage($log, data, callbacks)
 
     WebSocket.onerror (e) ->
       $log.error("Cannot Connect to WebSocket: #{e}")
@@ -54,8 +52,11 @@ Instalk.myApp
       initialised = false
 
     # Return
-    isConnected: () -> connected
+    currentState: () -> WebSocket.states[WebSocket.readyState()]
+    isOnline: () -> @currentState() == 'OPEN' and initialised and inRoom
     isInitialised: () -> initialised
+
+    messages: messages
 
     joinRoom: (roomId) ->
       if initialised
@@ -63,16 +64,26 @@ Instalk.myApp
       else
         throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot joing a room unless your connection is initialised!')
 
+    sendMessage: (roomId, message) ->
+      if initialised
+        WebSocket.send JSON.stringify protocol.sendMessage($log, roomId, message)
+      else
+        throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot send a message unless your connection is initialised!')
+
     onRoomJoin: (callback) ->
-      callbacks.roomJoined.push(callback)
+      inRoom = true
+      callbacks.roomJoined.push callback
 
     onJoin: (callback) ->
-      callbacks.joined.push(callback)
+      callbacks.joined.push callback
 
     onLeft: (callback) ->
-      callbacks.left.push(callback)
+      callbacks.left.push callback
 
     onWelcome: (callback) ->
-      callbacks.welcome.push(callback)
+      callbacks.welcome.push callback
+
+    onMessage: (callback) ->
+      callbacks.message.push callback
 
 

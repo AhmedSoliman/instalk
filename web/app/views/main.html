@@ -1,7 +1,7 @@
     <div id="chat-window" class="container-fluid" ng-blur="away()">
       <div id="loader" class="row">
-        <div class="col-md-offset-5 col-md-2 bg-info text-center" ng-show="socket.isConnected()">
-          Connected: <strong>{{ socket.isConnected() }}</strong> - Initialised: <strong>{{ socket.isInitialised() }}</strong>
+        <div class="col-md-offset-5 col-md-2 bg-danger text-center" ng-show="! socket.isOnline()">
+          Not Ready!
         </div>
       </div>
       <div class="row">
@@ -10,14 +10,16 @@
         <div ng-include src="'partials/members.html'"></div>
       </div>
       <div class="row">
+      <form name="msgForm" class="form-inline" ng-submit="sendMessage()">
         <div class="col-md-8">
-        <form role"form" class="form-inline"></form>
-          <input for="message" class="form-control" placeholder="Say Something..." type="text" />
+          <input for="message" class="form-control" placeholder="Say Something..." type="text" ng-model="msg" required>
+          <span class="error" ng-show="myForm.input.$error.required">Required!</span>
         </div>
         <div class="col-md-1">
-          <button class="btn btn-primary">Send</button>
+          <input type="submit" class="btn btn-primary" ng-disabled="! socket.isOnline()" value="Send">
         </div>
         <div class="col-md-3"></div>
+        </form>
 
       </div>
     </div>

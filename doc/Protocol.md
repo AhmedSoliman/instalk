@@ -88,9 +88,7 @@ Other members of the room will receive an `Event` that you left, they will be re
 Once you are a member of a room you can start sending messages to the users of the room by sending requests like this
 
 ```
-{"r": "MyRoomId", "o": "msg", "data":
-  {"message": {"txt": "Hello World"}}
-}
+{"r": "MyRoomId", "o": "msg", "data": {"txt": "Hello World"}}
 ```
 The server then will add a sequential `#` number for your message and distribute your message to everybody in the room _including yourself_ after adding more data to it, your message in this case will be
 

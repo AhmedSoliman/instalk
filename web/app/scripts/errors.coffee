@@ -1,8 +1,8 @@
 'use strict'
 
-window.Instalk or= {}
+window.Instalk ?= {}
 
-window.Instalk.Errors or= {}
+window.Instalk.Errors ?= {}
 
 class InstalkException
   constructor: (@name, @message) ->

@@ -1,7 +1,7 @@
 'use strict'
 
-window.Config or= {}
+window.Instalk ?= {}
 
-window.Config =
+Instalk.Config =
   Transport:
     url: "ws://localhost:9000/websocket"

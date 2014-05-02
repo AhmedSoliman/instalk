@@ -1,6 +1,6 @@
 'use strict'
 
-window.Instalk or= {}
+window.Instalk ?= {}
 
 Instalk.Protocol =
   welcome: (msg) ->
@@ -10,19 +10,28 @@ Instalk.Protocol =
     else
       throw new Instalk.Errors.ProtocolError("NotWelcome", "We are expecting a welcome from server, instead we got #{msg}")
 
-  handleMessage: (data, callbacks) ->
-    console.log callbacks
+  handleMessage: ($log, data, callbacks) ->
     switch data.o
       when "room-welcome"
         callback data for callback in callbacks.roomJoined
       when "joined"
+        $log.debug("PROTOCOL: Got JOIN: #{data}")
         callback data for callback in callbacks.joined
       when "left"
-        console.log("PROTOCOL: Got LEFT")
+        $log.debug("PROTOCOL: Got LEFT: #{data}")
         callback data for callback in callbacks.left
+      when "msg"
+        $log.debug("PROTOCOL: Got MSG: #{data}")
+        callback data for callback in callbacks.message
+
       else
-        console.log("Something I could not handle:")
-        console.log data
+        $log.error("Something I could not handle:" + data)
+
+  sendMessage: ($log, roomId, message) ->
+    r: roomId,
+    o: "msg",
+    data:
+      txt: message
 
 
   joinRoom: (roomId) ->
