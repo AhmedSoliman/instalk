@@ -10,7 +10,7 @@
         <div ng-include src="'partials/members.html'"></div>
       </div>
       <div class="row">
-      <form name="msgForm" class="form-inline" ng-submit="sendMessage()">
+      <form name="msgForm" class="form" ng-submit="sendMessage()">
         <div class="col-md-8">
           <input for="message" class="form-control" placeholder="Say Something..." type="text" ng-model="msg" required>
           <span class="error" ng-show="myForm.input.$error.required">Required!</span>

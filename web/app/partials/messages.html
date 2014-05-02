@@ -1,5 +1,6 @@
 <div id="messages-box" class="col-md-9">
-  <div class="row own" ng-repeat="message in messages">
+<div ng-repeat="message in messages">
+  <div class="row" ng-class="{own: message.data.msg.sender.username == user.username}">
     <div ng-switch="message.o">
       <div ng-switch-when="msg">
         <div class="col-md-2" style="color: {{ message.data.msg.sender.color }}">
@@ -19,5 +20,6 @@
         <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
       </div>
     </div>
+  </div>
   </div>
 </div>

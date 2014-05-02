@@ -2,19 +2,22 @@ $icon-font-path: "/vendor/bootstrap-sass/vendor/assets/fonts/";
 
 @import 'bootstrap-sass-official/vendor/assets/stylesheets/bootstrap';
 
+ul,li { list-style-type: none;
+        list-style-position:outside;
+        margin:0;
+        padding:0; }
+
 #chat-window {
     height: 100vh;
-    background-color: darkgray;
+    #background-color: darkgray;
 }
 
 #messages-box {
-    //min-height: 600px;
-    min-height: 80vh;
-    background-color: lightgray;
+    min-height: 90vh;
 }
 #members-box {
-    min-height: 80vh;
-    background-color: green;
+    min-height: 90vh;
+    font-size: 1.3em;
 }
 #member-list {
   list-style: none;
