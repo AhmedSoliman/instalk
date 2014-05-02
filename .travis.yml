@@ -3,7 +3,8 @@ scala:
   - 2.10.4
 jdk:
   - oraclejdk8
-
+services:
+  - cassandra
 notifications:
   on_success: change
   on_failure: change
