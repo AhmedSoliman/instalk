@@ -131,8 +131,10 @@ with Matchers with PlayServer with Helpers {
             (latestMessages.head \ "txt").as[String] should equal(msg1.txt)
             (latestMessages.head \ "sender" \ "username").as[String] should equal(user1.username)
             //user 2 will send 2 more messages, then user 1 will send 1 message
+            Thread.sleep(300)
             sendMessage(room, client2, msg2)
             sendMessage(room, client2, msg3)
+            Thread.sleep(300)
             sendMessage(room, client1, msg4)
             withSocket(true) {
               (client3, probe3) =>
@@ -150,6 +152,46 @@ with Matchers with PlayServer with Helpers {
                 (latestMessages(3) \ "txt").as[String] should equal(msg1.txt)
                 (latestMessages(3) \ "sender" \ "username").as[String] should equal(user1.username)
             }
+        }
+    }
+  }
+  it should "fetch messages correct messages when I send fetch operation" in {
+    val room = "Neo"
+    //delete the history first
+    import im.instalk.global.Instalk
+    Instalk.persistence().dropRoomHistory(room)
+
+    val msg1 = Message("This is message no 1")
+    val msg2 = Message("This is message no 2")
+    val msg3 = Message("This is message no 3")
+    val msg4 = Message("This is message no 4")
+
+    withSocket(true) {
+      (client1, probe1) =>
+        val user1 = initialise(client1, probe1)
+        //assert that messages list is empty in room creation
+        joinRoom(room, client1, probe1)
+        val fetchMessages = fetchBefore(room, 99, client1, probe1)
+        fetchMessages.size should equal(0)
+        //user 1 will send some message
+        sendMessage(room, client1, msg1)
+        sendMessage(room, client1, msg2)
+        sendMessage(room, client1, msg3)
+        sendMessage(room, client1, msg4)
+        withSocket(true) {
+          (client2, probe2) =>
+            initialise(client2, probe2)
+            joinRoom(room, client2, probe2)
+            val fetchMessages = fetchBefore(room, 99, client2, probe2)
+            fetchMessages.size should equal(4)
+            (fetchMessages(0) \ "txt").as[String] should equal(msg4.txt)
+            (fetchMessages(0) \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(1) \ "txt").as[String] should equal(msg3.txt)
+            (fetchMessages(1) \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(2) \ "txt").as[String] should equal(msg2.txt)
+            (fetchMessages(2) \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(3) \ "txt").as[String] should equal(msg1.txt)
+            (fetchMessages(3) \ "sender" \ "username").as[String] should equal(user1.username)
         }
     }
   }

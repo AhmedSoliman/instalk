@@ -27,6 +27,7 @@ sealed trait RoomOp extends OperationRequest
 
 case class Message(txt: String)
 case class SeqEnvelope(seqNr: Long, sender: User, msg: Message, time: DateTime)
+case class FetchBefore(before: Long)
 
 case class Join(r: RoomId) extends OperationRequest
 case class Leave(r: RoomId) extends OperationRequest
@@ -35,6 +36,7 @@ case class StoppedTyping(r: RoomId) extends RoomOp
 case class Away(r: RoomId) extends RoomOp
 case class BroadcastMessageRequest(r: RoomId, data: Message) extends RoomOp //coming from user (REQUEST)
 case class RoomMessage(r: RoomId, envelope: SeqEnvelope) //going to room (RESPONSE)
+case class Fetch(r: RoomId, data: FetchBefore) extends RoomOp
 
 object DefaultFormats {
   implicit val joinFmt = Json.format[Join]
@@ -54,5 +56,6 @@ object DefaultFormats {
 }
   implicit val roomWrite = Json.writes[RoomMessage]
   implicit val broadcastMsgFmt = Json.format[BroadcastMessageRequest]
-
+  implicit val fetchBeforeFmt = Json.format[FetchBefore]
+  implicit val fetchFmt = Json.format[Fetch]
 }

@@ -121,7 +121,19 @@ trait Helpers {
 
   }
 
-
-
+  def fetchBefore(r: RoomId, before: Long, socket: WebSocketClient, probe: TestProbe): List[JsObject] = {
+    socket.send(Json.obj(
+      "r" -> r,
+      "o" -> "fetch",
+      "data" -> Json.obj("before" -> before)
+    ))
+    probe.expectMsgPF(5.seconds) {
+      case TextMessage(socket, msg) =>
+        val response = Json.parse(msg)
+        (response \ "r").as[String] should equal(r)
+        (response \ "o").as[String] should equal("fetch")
+        (response \ "data" \ "messages").as[List[JsObject]]
+    }
+  }
 
 }

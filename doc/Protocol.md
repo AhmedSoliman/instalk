@@ -116,6 +116,28 @@ The fields of the object `Message` is subject to change in the future, now it on
   "attachments":[/*attachment*/]
 }
 ```
+
+## Fetch Older MESSAGES
+When the clients asks for previous messages in the room history, client will specify its oldest message number
+
+```
+{ "r": "8BjK8",
+  "o": "fetch",
+  "data": {
+        "before": seqNr
+      }
+```
+
+server will respond with a punch of fixed number of messages older than the provided messages number
+
+```
+{ "r": "8BjK8",
+  "o": "fetch",
+  "data" {
+        "messages": []
+      }
+```
+
 ## Persistent Events
 When you send a message to the room, it gets persisted in the Cassandra store, this is not true only for messages but also for the following Events
 
@@ -139,16 +161,6 @@ Those events take a sequence number same as messages so they can be traversed an
   OR
 
   SERVER: {"r": "8BjK8", "o": "join-failed", "reason": {/* error */}}
-
-
-  //SYNC MESSAGES
-  CLIENT: {"r": "8BjK8", "o": "sync", "data": {
-    "from": seqNr
-  }
-
-  SERVER: {"r": "8BjK8", "o": "sync", "data" {
-    "messages": []
-  }
 
 
  //Leave Room

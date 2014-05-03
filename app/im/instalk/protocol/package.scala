@@ -43,6 +43,8 @@ package object protocol {
           Json.fromJson[Away](o)
         case Some("msg") =>
           Json.fromJson[BroadcastMessageRequest](o)
+        case Some("fetch") =>
+          Json.fromJson[Fetch](o)
         case Some(_) =>
           JsError("operation.unknown")
         case None =>
@@ -105,6 +107,14 @@ package object protocol {
           "msg" -> msg.envelope
         )
       )
+
+    def fetchBefore(roomId: RoomId, lastMessages: Iterable[JsObject]) = Json.obj(
+      "r" -> roomId,
+      "o" -> "fetch",
+      "data" -> Json.obj(
+        "messages" -> Json.toJson(lastMessages)
+      )
+    )
   }
 
   object Errors {

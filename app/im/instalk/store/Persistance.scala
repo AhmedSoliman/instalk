@@ -12,11 +12,20 @@ import play.api.libs.json._
 
 trait Persistence {
   def storeEvent(room: RoomId, seqNr: Long, op: String, data: JsObject, topic: String, members: Iterable[User]): Unit
+
   def getNextAvailableSeqNr(room: RoomId): Option[Long]
-  def getLatestMessages(room: RoomId, seqNr: Long): Iterable[JsObject]
+
+  def getLatestMessages(room: RoomId): Iterable[JsObject]
+
+  def syncRoom(room: RoomId, seqNr: Long): Iterable[JsObject]
+
   def getTopic(room: RoomId): Option[String]
+
   def dropRoomHistory(room: RoomId): Unit
-  def dropAllRooms(): Unit //Dangerous!
+
+  def dropAllRooms(): Unit
+
+  //Dangerous!
   def close(): Unit
 }
 
@@ -51,9 +60,18 @@ class CassandraPersistence(val config: Configuration)(implicit actorSystem: Acto
       None
   }
 
-  def getLatestMessages(room: RoomId, seqNr: Long): Iterable[JsObject] = {
+  def getLatestMessages(room: RoomId): Iterable[JsObject] = {
+    val result = session.execute(selectLatestEventsStmt.bind(room)).all
+    result.asScala.map {
+      row =>
+        val rawData = Json.parse(row.getString("data"))
+        (rawData \ "data" \ "msg").as[JsObject]
+    }
+  }
+
+  def syncRoom(room: RoomId, seqNr: Long): Iterable[JsObject] = {
     val result = session.execute(selectOlderEventsStmt.bind(room, seqNr: java.lang.Long)).all
-    result.asScala.map{
+    result.asScala.map {
       row =>
         val rawData = Json.parse(row.getString("data"))
         (rawData \ "data" \ "msg").as[JsObject]
