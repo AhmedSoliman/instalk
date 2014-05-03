@@ -42,7 +42,7 @@ trait Helpers {
     }
   }
 
-  def joinRoom(r: RoomId, socket: WebSocketClient, probe: TestProbe): List[User] = {
+  def joinRoom(r: RoomId, socket: WebSocketClient, probe: TestProbe): (List[User], List[JsObject]) = {
     socket.send(Json.obj(
       "r" -> r,
       "o" -> "join"
@@ -52,7 +52,7 @@ trait Helpers {
         val response = Json.parse(msg)
         (response \ "r").as[String] should equal(r)
         (response \ "o").as[String] should equal("room-welcome")
-        (response \ "data" \ "members").as[List[User]]
+        ((response \ "data" \ "members").as[List[User]], (response \ "data" \ "messages").as[List[JsObject]])
     }
   }
 

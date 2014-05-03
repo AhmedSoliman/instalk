@@ -65,11 +65,12 @@ package object protocol {
 
     def notSupportedOp(op: String) = Json.obj("o" -> op) ++ Errors.unsupportedOp
 
-    def roomWelcome(roomId: RoomId, members: Iterable[User]) = Json.obj(
+    def roomWelcome(roomId: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject]) = Json.obj(
       "r" -> roomId,
       "o" -> "room-welcome",
       "data" -> Json.obj(
-        "members" -> Json.toJson(members)
+        "members" -> Json.toJson(members),
+        "messages" -> Json.toJson(lastMessages)
       )
     )
 

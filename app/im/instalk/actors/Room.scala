@@ -25,7 +25,7 @@ import im.instalk.store.Persistence
 
 object Room {
 
-  case class RoomJoined(r: RoomId, members: Iterable[User])
+  case class RoomJoined(r: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject])
 
   case class RoomLeft(r: RoomId)
 
@@ -37,11 +37,12 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
   var seqNr = persistence.getNextAvailableSeqNr(roomId).getOrElse(0l)
   var topic = persistence.getTopic(roomId).getOrElse("")
   var members = Map.empty[ActorRef, User]
+  def lastMessages: Iterable[JsObject] = persistence.getLatestMessages(roomId, seqNr)
 
   def receive = {
     case JoinOrCreate(_, u) =>
       //send him welcome message
-      sender ! Room.RoomJoined(roomId, members.values)
+      sender ! Room.RoomJoined(roomId, members.values, lastMessages)
       publish(Responses.joinedRoom(roomId, u, DateTime.now()))
       //put the guy in the members
       members += (sender -> u)
