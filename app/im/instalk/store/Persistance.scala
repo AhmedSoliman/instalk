@@ -13,6 +13,7 @@ import play.api.libs.json._
 trait Persistence {
   def storeEvent(room: RoomId, seqNr: Long, op: String, data: JsObject, topic: String, members: Iterable[User]): Unit
   def getNextAvailableSeqNr(room: RoomId): Option[Long]
+  def getLatestMessages(room: RoomId, seqNr: Long): Iterable[JsObject]
   def getTopic(room: RoomId): Option[String]
   def dropRoomHistory(room: RoomId): Unit
   def dropAllRooms(): Unit //Dangerous!
@@ -48,6 +49,15 @@ class CassandraPersistence(val config: Configuration)(implicit actorSystem: Acto
       Some(result.getLong(0) + 1)
     else
       None
+  }
+
+  def getLatestMessages(room: RoomId, seqNr: Long): Iterable[JsObject] = {
+    val result = session.execute(selectOlderEventsStmt.bind(room, seqNr: java.lang.Long)).all
+    result.asScala.map{
+      row =>
+        val rawData = Json.parse(row.getString("data"))
+        (rawData \ "data" \ "msg").as[JsObject]
+    }
   }
 
   def getTopic(room: RoomId): Option[String] = {

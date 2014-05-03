@@ -45,10 +45,10 @@ class Client(user: User, socket: ActorRef) extends Actor with ActorLogging {
       handleRequest(msg)
     case Client.Response(msg) =>
       send(msg)
-    case Room.RoomJoined(roomId, members) =>
+    case Room.RoomJoined(roomId, members, lastMessages) =>
       context watch sender
       rooms += (roomId -> sender)
-      send(Responses.roomWelcome(roomId, members))
+      send(Responses.roomWelcome(roomId, members, lastMessages))
     case Room.RoomLeft(roomId) =>
       rooms -= roomId
       context unwatch sender
