@@ -37,7 +37,8 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
   var seqNr = persistence.getNextAvailableSeqNr(roomId).getOrElse(0l)
   var topic = persistence.getTopic(roomId).getOrElse("")
   var members = Map.empty[ActorRef, User]
-  def lastMessages: Iterable[JsObject] = persistence.getLatestMessages(roomId, seqNr)
+
+  def lastMessages: Iterable[JsObject] = persistence.getLatestMessages(roomId)
 
   def receive = {
     case JoinOrCreate(_, u) =>
@@ -61,7 +62,7 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
         case Some(user) =>
           val data = Responses.roomMessage(RoomMessage(roomId, SeqEnvelope(seqNr, user, o.data, DateTime.now())))
           publish(data)
-          persistence.storeEvent(roomId, seqNr, "msg", data, topic,  members.values)
+          persistence.storeEvent(roomId, seqNr, "msg", data, topic, members.values)
           seqNr += 1
         case None =>
           send(sender, Errors.notMemberInRoom)
@@ -75,6 +76,10 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
       }
       if (members.isEmpty)
         context stop self
+    case Fetch(r, data) =>
+      val result = Responses.fetchBefore(roomId, persistence.syncRoom(roomId, data.before))
+      send(sender, result)
+
   }
 
   def publish(msg: JsObject): Unit = {
