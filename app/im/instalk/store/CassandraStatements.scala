@@ -42,14 +42,14 @@ trait CassandraStatements {
     s"""
       SELECT seq_nr FROM ${tableName} WHERE
         room_id = ? ORDER BY seq_nr DESC
-        LIMIT 1;
+        LIMIT 2;
      """
 
   def selectLatestTopic =
     s"""
       SELECT topic FROM ${tableName} WHERE
         room_id = ? ORDER BY seq_nr DESC
-        LIMIT 1;
+        LIMIT 2;
      """
 
   def dropRoom =

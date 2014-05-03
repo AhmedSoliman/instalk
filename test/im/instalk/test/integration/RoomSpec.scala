@@ -128,8 +128,8 @@ with Matchers with PlayServer with Helpers {
             val uj2 = joinRoom(room, client2, probe2)
             val latestMessages = uj2._2
             latestMessages.size should equal(1)
-            (latestMessages.head \ "txt").as[String] should equal(msg1.txt)
-            (latestMessages.head \ "sender" \ "username").as[String] should equal(user1.username)
+            (latestMessages.head \ "data" \ "msg" \ "txt").as[String] should equal(msg1.txt)
+            (latestMessages.head \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
             //user 2 will send 2 more messages, then user 1 will send 1 message
             Thread.sleep(300)
             sendMessage(room, client2, msg2)
@@ -143,14 +143,14 @@ with Matchers with PlayServer with Helpers {
                 val uj3 = joinRoom(room, client3, probe3)
                 val latestMessages = uj3._2
                 latestMessages.size should equal(4)
-                (latestMessages(0) \ "txt").as[String] should equal(msg4.txt)
-                (latestMessages(0) \ "sender" \ "username").as[String] should equal(user1.username)
-                (latestMessages(1) \ "txt").as[String] should equal(msg3.txt)
-                (latestMessages(1) \ "sender" \ "username").as[String] should equal(user2.username)
-                (latestMessages(2) \ "txt").as[String] should equal(msg2.txt)
-                (latestMessages(2) \ "sender" \ "username").as[String] should equal(user2.username)
-                (latestMessages(3) \ "txt").as[String] should equal(msg1.txt)
-                (latestMessages(3) \ "sender" \ "username").as[String] should equal(user1.username)
+                (latestMessages(3) \ "data" \ "msg" \ "txt").as[String] should equal(msg4.txt)
+                (latestMessages(3) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
+                (latestMessages(2) \ "data" \ "msg" \ "txt").as[String] should equal(msg3.txt)
+                (latestMessages(2) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user2.username)
+                (latestMessages(1) \ "data" \ "msg" \ "txt").as[String] should equal(msg2.txt)
+                (latestMessages(1) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user2.username)
+                (latestMessages(0) \ "data" \ "msg" \ "txt").as[String] should equal(msg1.txt)
+                (latestMessages(0) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
             }
         }
     }
@@ -184,14 +184,14 @@ with Matchers with PlayServer with Helpers {
             joinRoom(room, client2, probe2)
             val fetchMessages = fetchBefore(room, 99, client2, probe2)
             fetchMessages.size should equal(4)
-            (fetchMessages(0) \ "txt").as[String] should equal(msg4.txt)
-            (fetchMessages(0) \ "sender" \ "username").as[String] should equal(user1.username)
-            (fetchMessages(1) \ "txt").as[String] should equal(msg3.txt)
-            (fetchMessages(1) \ "sender" \ "username").as[String] should equal(user1.username)
-            (fetchMessages(2) \ "txt").as[String] should equal(msg2.txt)
-            (fetchMessages(2) \ "sender" \ "username").as[String] should equal(user1.username)
-            (fetchMessages(3) \ "txt").as[String] should equal(msg1.txt)
-            (fetchMessages(3) \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(3) \ "data" \ "msg" \ "txt").as[String] should equal(msg4.txt)
+            (fetchMessages(3) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(2) \ "data" \ "msg" \ "txt").as[String] should equal(msg3.txt)
+            (fetchMessages(2) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(1) \ "data" \ "msg" \ "txt").as[String] should equal(msg2.txt)
+            (fetchMessages(1) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
+            (fetchMessages(0) \ "data" \ "msg" \ "txt").as[String] should equal(msg1.txt)
+            (fetchMessages(0) \ "data" \ "msg" \ "sender" \ "username").as[String] should equal(user1.username)
         }
     }
   }

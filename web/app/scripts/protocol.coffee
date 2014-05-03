@@ -5,20 +5,20 @@ Instalk.myApp
     _initialised = false
     _callbacks = {}
 
-    onBeforeWelcomeMessage = (e) ->
+    onBeforeWelcomeMessage = (ev) ->
       data = JSON.parse ev.data
       user = Instalk.Protocol.getUser data
       _initialised = true
       $log.debug 'I am:', user
-      WebSocket.onmessage = onAfterWelcomeMessage
+      WebSocket.onmessage onAfterWelcomeMessage
       callback user for callback in _callbacks['welcome']
 
-    onAfterWelcomeMessage = (e) ->
+    onAfterWelcomeMessage = (ev) ->
       data = JSON.parse ev.data
       Instalk.Protocol.handleMessage $log, data, _callbacks
 
     reconnect = () ->
-      WebSocket.onmessage = onBeforeWelcomeMessage
+      WebSocket.onmessage onBeforeWelcomeMessage
       $log.info 'Reconnecting to the WebSocket...'
       WebSocket.new()
 
@@ -31,7 +31,7 @@ Instalk.myApp
       $log.info 'WebSocket Closed...'
       _initialised = false
 
-    WebSocket.onmessage = onBeforeWelcomeMessage
+    WebSocket.onmessage onBeforeWelcomeMessage
 
     WebSocket.onerror (e) ->
       $log.error 'Error: Lost Connection to WebSocket:', e

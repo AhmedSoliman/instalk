@@ -54,37 +54,21 @@ class CassandraPersistence(val config: Configuration)(implicit actorSystem: Acto
 
   def getNextAvailableSeqNr(room: RoomId): Option[Long] = {
     val result = session.execute(selectLatestSeqNrStmt.bind(room)).one
-    if (null != result)
-      Some(result.getLong(0) + 1)
-    else
-      None
+    Option(result).map(_.getLong(0) + 1)
   }
 
   def getLatestMessages(room: RoomId): Iterable[JsObject] = {
     val result = session.execute(selectLatestEventsStmt.bind(room)).all
-    result.asScala.map {
-      row =>
-        val rawData = Json.parse(row.getString("data"))
-        (rawData \ "data" \ "msg").as[JsObject]
-    }
+    result.asScala.map(row => Json.parse(row.getString("data")).as[JsObject]).reverse
   }
 
   def syncRoom(room: RoomId, seqNr: Long): Iterable[JsObject] = {
     val result = session.execute(selectOlderEventsStmt.bind(room, seqNr: java.lang.Long)).all
-    result.asScala.map {
-      row =>
-        val rawData = Json.parse(row.getString("data"))
-        (rawData \ "data" \ "msg").as[JsObject]
-    }
+    result.asScala.map(row => Json.parse(row.getString("data")).as[JsObject]).reverse
   }
 
-  def getTopic(room: RoomId): Option[String] = {
-    val result = session.execute(selectLatestTopicStmt.bind(room)).one
-    if (null != result)
-      Some(result.getString(0))
-    else
-      None
-  }
+  def getTopic(room: RoomId): Option[String] =
+    Option(session.execute(selectLatestTopicStmt.bind(room)).one).map(_.getString(0))
 
   def dropRoomHistory(room: RoomId): Unit = session.execute(dropRoomHistoryStmt.bind(room))
 

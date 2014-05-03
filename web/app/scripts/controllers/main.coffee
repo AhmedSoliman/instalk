@@ -16,7 +16,9 @@ Instalk.myApp
       #actual init...
       $log.debug "Room #{$scope.roomId} Joined, Members:", data.data.members
       _inRoom = true
+      $log.debug "SYNC:", data.data
       $scope.members = data.data.members.toDict 'username'
+      $scope.messages = data.data.messages
 
     InstalkProtocol.onWelcome (user) ->
       $log.debug 'Got Welcome...'
