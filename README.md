@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/ahmedsoliman/instalk.png?label=ready&title=Ready)](https://waffle.io/ahmedsoliman/instalk)
 Instalk
 =======
 ![](https://api.travis-ci.org/AhmedSoliman/instalk.svg)
