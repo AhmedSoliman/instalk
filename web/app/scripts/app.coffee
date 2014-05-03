@@ -23,6 +23,4 @@ Instalk.myApp = angular.module('webApp', [
       .otherwise
         redirectTo: '/' + Instalk.Utils.mkId(6)
   ]
-#  .run (amMoment) ->
-#    amMoment.changeLanguage('de')
 

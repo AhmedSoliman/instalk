@@ -1,25 +1,28 @@
 <div id="messages-box" class="col-md-9">
-<div ng-repeat="message in messages">
-  <div class="row" ng-class="{own: message.data.msg.sender.username == user.username}">
-    <div ng-switch="message.o">
-      <div ng-switch-when="msg">
-        <div class="col-md-2" style="color: {{ message.data.msg.sender.color }}">
-        <strong>{{ message.data.msg.sender.username }}</strong>
+  <div ng-repeat="message in messages">
+    <div class="row" ng-class="{own: message.data.msg.sender.username == user.username}">
+      <div ng-switch="message.o">
+        <div ng-switch-when="msg">
+          <div class="col-md-2" style="color: {{ message.data.msg.sender.color }}">
+            <strong>{{ message.data.msg.sender.username }}</strong>
+          </div>
+          <div class="col-md-8">{{ message.data.msg.txt }}</div>
+          <div class="col-md-2"><span am-time-ago="message.data.msg.time"></span></div>
         </div>
-        <div class="col-md-8">{{ message.data.msg.txt }}</div>
-        <div class="col-md-2"><span am-time-ago="message.data.msg.time"></span></div>
-      </div>
 
-      <div ng-switch-when="joined">
-        <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just JOINED The Room.</div>
-        <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
-      </div>
+        <div ng-switch-when="joined">
+          <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just JOINED The Room.</div>
+          <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
+        </div>
 
-      <div ng-switch-when="left">
-        <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just LEFT The Room.</div>
-        <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
+        <div ng-switch-when="left">
+          <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just LEFT The Room.</div>
+          <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
+        </div>
       </div>
     </div>
   </div>
+  <div class="row">
+    <div class="col-md-offset-2 col-md-10" ng-hide="! isSomeoneTyping()" >someone is typing...</div>
   </div>
 </div>

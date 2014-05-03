@@ -6,43 +6,66 @@ Array::toDict = (key) ->
 
 Instalk.myApp
   .controller 'MainCtrl', ['$scope', '$log', '$routeParams', 'InstalkProtocol', ($scope, $log, $routeParams, InstalkProtocol) ->
-    $scope.addRandomMember = () -> $scope.members.push("ZAKI" + Math.round(Math.random() * 100))
+    _inRoom = false
     $scope.roomId = $routeParams.roomId
-    $scope.socket = InstalkProtocol
     $scope.user = null
     $scope.members = {}
     $scope.messages = []
-    InstalkProtocol.onRoomJoin (data) ->
+
+    InstalkProtocol.onRoomWelcome (data) ->
       #actual init...
-      $log.debug "WE JOINED THE ROOM #{$scope.roomId}, MEMBERS: #{data.data.members}"
-      $log.debug data.data.members
-      $scope.members = data.data.members.toDict("username")
+      $log.debug "Room #{$scope.roomId} Joined, Members:", data.data.members
+      _inRoom = true
+      $scope.members = data.data.members.toDict 'username'
 
     InstalkProtocol.onWelcome (user) ->
-      $log.debug("Server said WELCOME")
+      $log.debug 'Got Welcome...'
       $scope.user = user
       InstalkProtocol.joinRoom $scope.roomId
 
     InstalkProtocol.onJoin (data) ->
-      $log.debug "New Guys Joined #{data.data.user.username}"
+      $log.debug "#{data.data.user.username} joined the room"
       $scope.members[data.data.user.username] = data.data.user
-      $log.debug data
-      $scope.messages.push(data)
+      $scope.messages.push data
 
     InstalkProtocol.onLeft (data) ->
-      $log.debug "SOMEONE LEFT"
       delete $scope.members[data.data.user.username]
       $log.debug "User: #{data.data.user.username} Left Room"
-      $scope.messages.push(data)
+      $scope.messages.push data
 
     InstalkProtocol.onMessage (data) ->
-      $log.debug("Adding Message:")
-      $log.debug(data)
-      $scope.messages.push(data)
+      $log.debug 'Adding Message To History:', data
+      $scope.messages.push data
 
-    $scope.away = () -> alert "We are away!"
+    $scope.away = () -> alert 'We are away!' #TODO
+
+    $scope.isSomeoneTyping = () -> false #TODO
+
+    $scope.isConnecting = () ->
+      (InstalkProtocol.currentState() is 'OPEN' or InstalkProtocol.currentState() is 'CONNECTING') and not $scope.isOnline()
+
+    $scope.isDisconnected = () ->
+      (InstalkProtocol.currentState() is 'CLOSED') or (InstalkProtocol.currentState() is 'CLOSING')
+
+    $scope.isConnected = () -> InstalkProtocol.currentState() == 'OPEN'
+
+    $scope.isOnline = () -> InstalkProtocol.isOnline() and _inRoom is true
+
+    $scope.reconnect = () -> InstalkProtocol.reconnect()
+
+    $scope.currentState = () -> InstalkProtocol.currentState()
+
+    $scope.initialisationStatus = () ->
+      switch InstalkProtocol.currentState()
+        when 'OPEN'
+          if InstalkProtocol.isInitialised()
+            if _inRoom then 'Ready...' else 'Joining Room...'
+          else 'Initialising...'
+        when 'CONNECTING' then 'Connecting...'
+        else 'Unknown...'
+
     $scope.sendMessage = () ->
-      $log.debug("SENDING:" + $scope.msg)
-      InstalkProtocol.sendMessage($scope.roomId, $scope.msg)
-      $scope.msg = ""
+      $log.debug 'Sending: ', $scope.msg
+      InstalkProtocol.sendMessage $scope.roomId, $scope.msg
+      $scope.msg = ''
     ]

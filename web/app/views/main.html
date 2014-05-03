@@ -1,7 +1,11 @@
     <div id="chat-window" class="container-fluid" ng-blur="away()">
       <div id="loader" class="row">
-        <div class="col-md-offset-5 col-md-2 bg-danger text-center" ng-show="! socket.isOnline()">
-          Not Ready!
+        <div class="col-md-offset-5 col-md-2 bg-success text-center" ng-show="isConnecting()">
+          {{ initialisationStatus() }}
+        </div>
+
+        <div class="col-md-offset-4 col-md-4 bg-danger text-center" ng-show="isDisconnected()">
+          Lost Connection <a href="" ng-click="reconnect()">Reconnect</a>
         </div>
       </div>
       <div class="row">
@@ -10,15 +14,15 @@
         <div ng-include src="'views/members.html'"></div>
       </div>
       <div class="row">
-      <form name="msgForm" class="form" ng-submit="sendMessage()">
-        <div class="col-md-8">
-          <input for="message" class="form-control" placeholder="Say Something..." type="text" ng-model="msg" required>
-          <span class="error" ng-show="myForm.input.$error.required">Required!</span>
-        </div>
-        <div class="col-md-1">
-          <input type="submit" class="btn btn-primary" ng-disabled="! socket.isOnline()" value="Send">
-        </div>
-        <div class="col-md-3"></div>
+        <form name="msgForm" class="form" ng-submit="sendMessage()">
+          <div class="col-md-8">
+            <input for="message" class="form-control" placeholder="Say Something..." type="text" ng-model="msg" required>
+            <span class="error" ng-show="myForm.input.$error.required">Required!</span>
+          </div>
+          <div class="col-md-1">
+            <input type="submit" class="btn btn-primary" ng-disabled="! isOnline()" value="Send">
+          </div>
+          <div class="col-md-3"></div>
         </form>
 
       </div>
