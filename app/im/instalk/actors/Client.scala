@@ -17,10 +17,11 @@ package im.instalk.actors
 
 import akka.actor._
 import play.api.libs.json._
-import im.instalk.User
+import im.instalk.{AnonymousUserInfo, AnonymousUser, User}
 import im.instalk.global.Instalk
 import im.instalk.protocol._
 import im.instalk.actors.RoomManager.JoinOrCreate
+import im.instalk.actors.Room.UpdateUser
 
 
 object Client {
@@ -45,6 +46,8 @@ class Client(user: User, socket: ActorRef) extends Actor with ActorLogging {
       handleRequest(msg)
     case Client.Response(msg) =>
       send(msg)
+    case UpdateUser(newUser) =>
+      _user = newUser
     case Room.RoomJoined(roomId, members, lastMessages) =>
       context watch sender
       rooms += (roomId -> sender)
@@ -78,6 +81,14 @@ class Client(user: User, socket: ActorRef) extends Actor with ActorLogging {
         roomManager ! JoinOrCreate(o.r, _user)
       case JsSuccess(o: Leave, _) =>
         routeToRoom(o)
+      case JsSuccess(o: SetUserInfoRequest, _) =>
+        //apply changes to the local User object and propagate to all rooms
+        val newUser = applyUserInfo(o.data)
+        if (newUser != _user) {
+          _user = newUser
+          //propagate
+          rooms.foreach(_._2 ! UpdateUser(_user))
+        }
       case JsSuccess(o: RoomOp, _) =>
         routeToRoom(o)
       case JsSuccess(o, _) =>
@@ -85,6 +96,25 @@ class Client(user: User, socket: ActorRef) extends Actor with ActorLogging {
         send(Errors.notImplemented)
       case e: JsError =>
         send(Errors.invalidOperationMessage(e))
+    }
+  }
+
+  def applyUserInfo(changes: AnonymousInfoModification): User = {
+    _user match {
+      case u: AnonymousUser =>
+        (changes.name, changes.color) match {
+          case (Some(name), Some(color)) =>
+            u.copy(info = AnonymousUserInfo(name, color))
+          case (Some(name), None) =>
+            u.copy(info = u.info.copy(name = name))
+          case (None, Some(color)) =>
+            u.copy(info = u.info.copy(color = color))
+          case (None, None) =>
+            _user
+        }
+      case _ =>
+        //this should not be possible
+        ???
     }
   }
 }

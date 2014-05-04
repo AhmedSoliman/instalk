@@ -45,6 +45,8 @@ package object protocol {
           Json.fromJson[BroadcastMessageRequest](o)
         case Some("fetch") =>
           Json.fromJson[Fetch](o)
+        case Some("set-user-info") =>
+          Json.fromJson[SetUserInfoRequest](o)
         case Some(_) =>
           JsError("operation.unknown")
         case None =>
@@ -80,6 +82,8 @@ package object protocol {
       "r" -> roomId,
       "o" -> "room-bye"
     )
+
+    def setUserInfo(info: SetUserInfo) = Json.toJson(info).as[JsObject]
 
     def joinedRoom(roomId: RoomId, who: User, when: DateTime) = Json.obj(
       "r" -> roomId,

@@ -59,6 +59,15 @@ Instalk.myApp
       else
         throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot send a message unless your connection is _initialised!')
 
+    updateUserInfo: (name, color) ->
+      if _initialised
+        WebSocket.send JSON.stringify Instalk.Protocol.updateUserInfo($log, name, color)
+      else
+        throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot send a message unless your connection is _initialised!')
+
+    onUserInfoUpdate: (callback) ->
+      registerEvent 'userInfoUpdate', callback
+
     onRoomWelcome: (callback) ->
       registerEvent 'roomWelcome', callback
 

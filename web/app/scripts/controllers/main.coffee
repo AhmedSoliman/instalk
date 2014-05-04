@@ -3,9 +3,12 @@
 Array::toDict = (key) ->
   @reduce ((dict, obj) -> dict[ obj[key] ] = obj if obj[key]?; return dict), {}
 
+unless Array::filter
+  Array::filter = (callback) ->
+    element for element in this when callback(element)
 
 Instalk.myApp
-  .controller 'MainCtrl', ['$scope', '$log', '$routeParams', 'InstalkProtocol', ($scope, $log, $routeParams, InstalkProtocol) ->
+  .controller 'MainCtrl', ['$scope', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $log, $routeParams, $cookies, InstalkProtocol) ->
     _inRoom = false
     $scope.roomId = $routeParams.roomId
     $scope.user = null
@@ -23,6 +26,7 @@ Instalk.myApp
     InstalkProtocol.onWelcome (user) ->
       $log.debug 'Got Welcome...'
       $scope.user = user
+      $cookies.userInfo = JSON.stringify user
       InstalkProtocol.joinRoom $scope.roomId
 
     InstalkProtocol.onJoin (data) ->
@@ -38,6 +42,20 @@ Instalk.myApp
     InstalkProtocol.onMessage (data) ->
       $log.debug 'Adding Message To History:', data
       $scope.messages.push data
+
+    InstalkProtocol.onUserInfoUpdate (data) ->
+      $scope.messages.push data
+      #check if it's me or not first
+      if $scope.user.username is data.data.originalUsername
+        $log.debug 'Updating my own data to ', data.data.newUserInfo
+        $scope.user = data.data.newUserInfo
+        $cookies.userInfo = JSON.stringify $scope.user
+      else
+        #search in members
+        $log.debug 'Updating a member data to ', data.data.newUserInfo
+        delete $scope.members[data.data.originalUsername]
+        $scope.members[data.data.newUserInfo.username] = data.data.newUserInfo
+
 
     $scope.away = () -> alert 'We are away!' #TODO
 
@@ -65,6 +83,9 @@ Instalk.myApp
           else 'Initialising...'
         when 'CONNECTING' then 'Connecting...'
         else 'Unknown...'
+
+    $scope.updateUserInfo =  () ->
+      InstalkProtocol.updateUserInfo $scope.user.info.name, $scope.user.info.color
 
     $scope.sendMessage = () ->
       $log.debug 'Sending: ', $scope.msg

@@ -3,8 +3,8 @@
     <div class="row" ng-class="{own: message.data.msg.sender.username == user.username}">
       <div ng-switch="message.o">
         <div ng-switch-when="msg">
-          <div class="col-md-2" style="color: {{ message.data.msg.sender.color }}">
-            <strong>{{ message.data.msg.sender.username }}</strong>
+          <div class="col-md-2" style="color: {{ message.data.msg.sender.info.color }}" title="{{ message.data.msg.sender.username}}">
+            <strong>{{ message.data.msg.sender.info.name }}</strong>
           </div>
           <div class="col-md-8">{{ message.data.msg.txt }}</div>
           <div class="col-md-2"><span am-time-ago="message.data.msg.time"></span></div>
@@ -18,6 +18,10 @@
         <div ng-switch-when="left">
           <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just LEFT The Room.</div>
           <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
+        </div>
+        <div ng-switch-when="set-user-info">
+          <div class="col-md-offset-2 col-md-8"><em>{{ message.data.originalUsername }}</em> is now identified as <div class="user-color" style="background-color: {{message.data.newUserInfo.info.color}}" ng-if="message.data.newUserInfo.info.color"></div> <strong>{{ message.data.newUserInfo.info.name }}</strong>.</div>
+          <div class="col-md-2"><span am-time-ago="message.data.when"></div>
         </div>
       </div>
     </div>

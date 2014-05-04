@@ -16,44 +16,66 @@
 package im.instalk
 
 import scala.util.Random
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 sealed trait User {
-  def color: String
   def username: String
-  def verified: Boolean
-  def link: Option[String]
+  def info: UserInfo
 }
 
+sealed trait UserInfo {
+  def name: String
+}
+
+case class AnonymousUserInfo(val name: String, color: String) extends UserInfo
+
+case class AuthenticatedUserInfo(val name: String, gravatar: String) extends UserInfo
+
+case class AuthenticatedUser(val username: String, val info: AuthenticatedUserInfo) extends User
+
+case class AnonymousUser(val username: String, val info: AnonymousUserInfo) extends User
+
 object User {
-  case class Anonymous(val color: String, val username: String) extends User {
-    val verified = false
-    val link = None
-  }
+  def generateName(s: String): String = s.replace('-', ' ')
 
   implicit val userFormat: Format[User] = new Format[User] {
-    val anonFmt = Json.format[Anonymous]
+    implicit val anonFmt = Json.format[AnonymousUserInfo]
+    implicit val authFmt = Json.format[AuthenticatedUserInfo]
 
-    def writes(o: User): JsValue = {
-      o match {
-        case anon: Anonymous =>
-          //do something
-          anonFmt.writes(anon)
-        case _ => //do something else
-          Json.obj() //TODO: Fix when implementing authenticated user
-      }
+    def writes(o: User): JsValue = o match {
+      case u: AnonymousUser =>
+        Json.obj(
+          "username" -> u.username,
+          "auth" -> false,
+          "info" -> Json.toJson(u.info)
+        )
+      case u: AuthenticatedUser =>
+        Json.obj(
+          "username" -> u.username,
+          "auth" -> true,
+          "info" -> Json.toJson(u.info)
+        )
     }
+
+
     def reads(o: JsValue): JsResult[User] = {
-      val v = (o \ "verified").asOpt[Boolean]
-      v.map (
-        verified =>
-          if (! verified) {
-            anonFmt.reads(o)
-          } else {
-            //the guy is authenticated, not implemented yet
-            ???
-          }
-      ).getOrElse(anonFmt.reads(o))
+      (o \ "auth").asOpt[Boolean] match {
+        case Some(v) if v =>
+          //AuthenticatedUser
+          val reader =
+            ((__ \ "username").read[String] and
+                (__ \ "info").read[AuthenticatedUserInfo]
+              )(AuthenticatedUser.apply _)
+          reader.reads(o)
+        case Some(_) | None =>
+          //Anonymous
+          val reader =
+            ((__ \ "username").read[String] and
+              (__ \ "info").read[AnonymousUserInfo]
+              )(AnonymousUser.apply _)
+          reader.reads(o)
+      }
     }
 
   }
@@ -62,5 +84,6 @@ object User {
   private[this] val colorStr = "ABCDEF0123456789"
 
   def generateUsername: String = "Anonymous-" + Random.nextInt(5000)
+
   def generateColor: String = "#" + (1 to 6).map(_ => colorStr.charAt(Random.nextInt(16))).mkString("")
 }

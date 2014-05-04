@@ -24,9 +24,19 @@ Instalk.Protocol =
       when 'msg'
         $log.debug 'Protocol :: MSG:', data
         callback data for callback in callbacks['message']
+      when 'set-user-info'
+        $log.debug 'Protocol :: USER-INFO:', data
+        callback data for callback in callbacks['userInfoUpdate']
 
       else
         $log.error 'Protocol :: ERROR :: I could not handle:', data
+
+  updateUserInfo: ($log, name, color) ->
+    r: '*',
+    o: 'set-user-info',
+    data:
+      name: name
+      color: color
 
   sendMessage: ($log, roomId, message) ->
     r: roomId,

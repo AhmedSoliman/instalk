@@ -8,12 +8,18 @@ Instalk.myApp = angular.module('webApp', [
   'ngSanitize',
   'ngRoute',
   'angular-websocket',
-  'angularMoment'
+  'angularMoment',
+  "xeditable"
 ])
   .config ['WebSocketProvider', (WebSocketProvider) ->
+   userInfo = $.cookie('userInfo')
+   uri = Instalk.Config.Transport.url
+   if userInfo
+      uri += "?user=" + encodeURIComponent(userInfo)
+    console.log("THE URI:::" + uri)
     WebSocketProvider
     .prefix('')
-    .uri(Instalk.Config.Transport.url)
+    .uri(uri)
   ]
   .config ['$routeProvider', ($routeProvider) ->
     $routeProvider
@@ -23,4 +29,10 @@ Instalk.myApp = angular.module('webApp', [
       .otherwise
         redirectTo: '/' + Instalk.Utils.mkId(6)
   ]
+  .run ['editableOptions', (editableOptions) ->
+    editableOptions.theme = 'bs3'
+  ]
 
+# app.run(function(editableOptions) {
+#   editableOptions.theme = 'bs3'; // bootstrap3 theme. Can be also 'bs2', 'default'
+# });

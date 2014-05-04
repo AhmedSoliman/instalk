@@ -146,6 +146,72 @@ When you send a message to the room, it gets persisted in the Cassandra store, t
 
 Those events take a sequence number same as messages so they can be traversed and replayed by the server
 
+## Identifying Yourself
+
+Every user using the system has an identity, we automatically create a random username for every new connection in the form of __Anonymous-XXXX__ Then the user can set a `Name` (not unique) for himself which can be viewed everywhere. If the user became authenticated then he will use a uniquely identified username across the system.
+
+An anonymous identity is represented as
+
+```
+{
+	"username": "Anonymous-1234",
+	"auth": false,
+	"info": {
+		"name": "Ahmed Soliman",
+		"color": "#662255"
+	}
+}
+```
+
+While the authenticated user is represented as
+
+```
+{
+	"username": "AhmedSoliman", //no spaces
+	"auth": true,
+	"info": {
+		"name": "Ahmed Soliman",
+		"gravatar": "43f646a4de9e71ec4d20b362afd8cbb6"
+	}
+}
+```
+
+You have several ways to identify yourself using authenticated and anonumous methods
+
+### Change Your Info (anonymous)
+The client will send a request to change his username
+
+```
+{"r": "*", "o": "set-user-info", data: { "name": "Hamada", "color": "#226677"}
+```
+
+Everybody in all the rooms who has this guy in will receive an advertisment about his new identity
+
+```
+{"r": "MyRoom", "o": "set-user-info", "data": {
+    "#": 55,
+	"originalUsername": "Anonymous-1234",
+	"newUserInfo": {
+		"username": "Anonymous-1234", //should not change in case of auth=false
+		"auth": false,
+		"info": {
+			"name": "Ahmed Soliman",
+			"color": "#662255"
+		}
+	}
+}
+```
+
+### Remembering the identity
+Once you set your name the browser will keep this information in the cookie as:
+
+```
+  
+```
+
+
+## Authenticating A User [TODO]
+
 #### Proposed Ideas [Under Development/Disabled By Default]
 
   //HEART BEAT

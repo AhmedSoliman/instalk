@@ -22,10 +22,13 @@ import im.instalk.actors.RoomManager.JoinOrCreate
 import play.api.libs.json._
 import org.joda.time.DateTime
 import im.instalk.store.Persistence
+import im.instalk.actors.Room.UpdateUser
 
 object Room {
 
   case class RoomJoined(r: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject])
+
+  case class UpdateUser(newUser: User)
 
   case class RoomLeft(r: RoomId)
 
@@ -43,20 +46,38 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
   def receive = {
     case JoinOrCreate(_, u) =>
       //send him welcome message
-      sender ! Room.RoomJoined(roomId, members.values, lastMessages)
-      publish(Responses.joinedRoom(roomId, u, DateTime.now()))
+      sender ! Room.RoomJoined(roomId, members.values.toSet - u, lastMessages)
+      if (!members.values.exists(_ == u))
+        publish(Responses.joinedRoom(roomId, u, DateTime.now()))
       //put the guy in the members
       members += (sender -> u)
       context watch sender
     case Leave(_) =>
-      if (members.contains(sender)) {
-        val user = members(sender)
-        members -= sender
-        context unwatch sender
-        sender ! Room.RoomLeft(roomId)
-        publish(Responses.leftRoom(roomId, user, DateTime.now()))
-      }
+      leave(true, sender)
 
+    case UpdateUser(newUser) =>
+      members.get(sender).map {
+        oldUser =>
+          members -= sender
+          members += (sender -> newUser)
+
+          //update the other actors with the old user still
+          members.foreach {
+            case (client, u) =>
+              if (u == oldUser) {
+                members -= client
+                members += (client -> newUser)
+                client ! UpdateUser(newUser)
+              }
+          }
+
+          //publish that we changed the guy
+          val data = Responses.setUserInfo(SetUserInfo(roomId, UserInfoModification(seqNr, oldUser.username, newUser, DateTime.now())))
+          publish(data)
+          persistence.storeEvent(roomId, seqNr, "set-user-info", data, topic, members.values)
+          seqNr += 1
+
+      }
     case o: BroadcastMessageRequest =>
       members.get(sender) match {
         case Some(user) =>
@@ -69,17 +90,25 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
       }
     case Terminated(who) =>
       //somebody left, advertise leaving
-      members.get(who).foreach {
-        u =>
-          members -= who
-          publish(Responses.leftRoom(roomId, u, DateTime.now()))
-      }
-      if (members.isEmpty)
-        context stop self
+      leave(false, who)
     case Fetch(r, data) =>
       val result = Responses.fetchBefore(roomId, persistence.syncRoom(roomId, data.before))
       send(sender, result)
 
+  }
+
+  def leave(notifyHim: Boolean, who: ActorRef): Unit = {
+    members.get(who).foreach {
+      user =>
+        members -= who
+        context unwatch who
+        if (notifyHim)
+          who ! Room.RoomLeft(roomId)
+        if (!members.values.exists(_ == user))
+          publish(Responses.leftRoom(roomId, user, DateTime.now()))
+        if (members.isEmpty)
+          context stop self
+    }
   }
 
   def publish(msg: JsObject): Unit = {

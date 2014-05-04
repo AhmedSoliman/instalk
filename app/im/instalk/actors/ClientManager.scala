@@ -17,8 +17,9 @@ package im.instalk.actors
 
 import akka.actor._
 import play.api.mvc._
+import play.api.libs.json._
 import scala.util.Random
-import im.instalk.User
+import im.instalk.{AnonymousUserInfo, AnonymousUser, User}
 
 object ClientManager {
   case class CreateClient(r: RequestHeader)
@@ -27,8 +28,23 @@ class ClientManager extends Actor with ActorLogging {
   def receive = {
     case ClientManager.CreateClient(r) =>
       //try to figure out who is the user
-      //TODO: let's query the user registery, for now we are assuming anonymous
-      val actor = context.actorOf(Props(new WebSocketActor(User.Anonymous(User.generateColor, User.generateUsername), Client.props, r.remoteAddress)), "client-" + Math.abs(Random.nextInt))
+      //TODO: let's query the user registry, for now we are assuming anonymous
+      val x: Option[User] = r.getQueryString("user").flatMap {
+        v =>
+          Json.parse(v).validate[User] match {
+            case JsSuccess(user, _) =>
+              Some(user)
+            case e: JsError =>
+              log.warning("Could not parse the userInfo passed, reason: {}", JsError.toFlatJson(e).toString)
+              None
+          }
+      }
+
+      val user = x.getOrElse {
+        val username = User.generateUsername
+        AnonymousUser(username, AnonymousUserInfo(User.generateName(username), User.generateColor))
+      }
+      val actor = context.actorOf(Props(new WebSocketActor(user, Client.props, r.remoteAddress)), "client-" + Math.abs(Random.nextInt))
       actor.tell(WebSocketActor.GetActuator, sender)
   }
 }
