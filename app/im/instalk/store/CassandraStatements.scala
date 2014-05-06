@@ -52,6 +52,12 @@ trait CassandraStatements {
         LIMIT 2;
      """
 
+  def updateRoomTopic =
+    s"""
+      UPDATE ${tableName} SET topic = ? WHERE
+      room_id = ?;
+    """
+
   def dropRoom =
     s""" DELETE FROM ${tableName} WHERE room_id = ?"""
 

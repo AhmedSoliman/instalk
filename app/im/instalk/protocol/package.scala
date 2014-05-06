@@ -47,6 +47,8 @@ package object protocol {
           Json.fromJson[Fetch](o)
         case Some("set-user-info") =>
           Json.fromJson[SetUserInfoRequest](o)
+        case Some("set-room-topic") =>
+          Json.fromJson[SetRoomTopicRequest](o)
         case Some(_) =>
           JsError("operation.unknown")
         case None =>
@@ -69,12 +71,13 @@ package object protocol {
 
     def notSupportedOp(op: String) = Json.obj("o" -> op) ++ Errors.unsupportedOp
 
-    def roomWelcome(roomId: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject]) = Json.obj(
+    def roomWelcome(roomId: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject], topic: String) = Json.obj(
       "r" -> roomId,
       "o" -> "room-welcome",
       "data" -> Json.obj(
         "members" -> Json.toJson(members),
-        "messages" -> Json.toJson(lastMessages)
+        "messages" -> Json.toJson(lastMessages),
+        "topic" -> topic
       )
     )
 
@@ -84,6 +87,8 @@ package object protocol {
     )
 
     def setUserInfo(info: SetUserInfo) = Json.toJson(info).as[JsObject]
+
+    def setRoomTopic(resp: SetRoomTopicResponse) = Json.toJson(resp).as[JsObject]
 
     def joinedRoom(roomId: RoomId, who: User, when: DateTime) = Json.obj(
       "r" -> roomId,

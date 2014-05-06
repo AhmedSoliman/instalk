@@ -65,6 +65,14 @@ Instalk.myApp
       else
         throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot send a message unless your connection is _initialised!')
 
+    setRoomTopic: (room, topic) ->
+      if _initialised
+        msg = JSON.stringify Instalk.Protocol.setRoomTopic(room, topic)
+        $log.info "Setting Room Topic: #{msg}"
+        WebSocket.send msg
+      else
+        throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot send a message unless your connection is _initialised!')
+
     onUserInfoUpdate: (callback) ->
       registerEvent 'userInfoUpdate', callback
 
@@ -82,6 +90,9 @@ Instalk.myApp
 
     onMessage: (callback) ->
       registerEvent 'message', callback
+
+    onRoomTopicChange: (callback) ->
+      registerEvent 'setRoomTopic', callback
     ]
 
 

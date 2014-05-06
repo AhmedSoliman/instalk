@@ -11,6 +11,8 @@ Instalk.myApp
   .controller 'MainCtrl', ['$scope', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $log, $routeParams, $cookies, InstalkProtocol) ->
     _inRoom = false
     $scope.roomId = $routeParams.roomId
+    $scope.room =
+      topic: ""
     $scope.user = null
     $scope.members = {}
     $scope.messages = []
@@ -22,6 +24,7 @@ Instalk.myApp
       $log.debug "SYNC:", data.data
       $scope.members = data.data.members.toDict 'username'
       $scope.messages = data.data.messages
+      $scope.room.topic = data.data.topic
 
     InstalkProtocol.onWelcome (user) ->
       $log.debug 'Got Welcome...'
@@ -42,6 +45,10 @@ Instalk.myApp
     InstalkProtocol.onMessage (data) ->
       $log.debug 'Adding Message To History:', data
       $scope.messages.push data
+
+    InstalkProtocol.onRoomTopicChange (data) ->
+      $scope.messages.push data
+      $scope.room.topic = data.data.topic
 
     InstalkProtocol.onUserInfoUpdate (data) ->
       $scope.messages.push data
@@ -86,6 +93,10 @@ Instalk.myApp
 
     $scope.updateUserInfo =  () ->
       InstalkProtocol.updateUserInfo $scope.user.info.name, $scope.user.info.color
+
+    $scope.setRoomTopic = () ->
+      $log.info("Updating the room topic to:", $scope.room.topic)
+      InstalkProtocol.setRoomTopic $scope.roomId, $scope.room.topic
 
     $scope.sendMessage = () ->
       $log.debug 'Sending: ', $scope.msg

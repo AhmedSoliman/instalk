@@ -21,6 +21,8 @@ trait Persistence {
 
   def getTopic(room: RoomId): Option[String]
 
+  def setTopic(room: RoomId, topic: String): Unit
+
   def dropRoomHistory(room: RoomId): Unit
 
   def dropAllRooms(): Unit
@@ -40,6 +42,7 @@ class CassandraPersistence(val config: Configuration)(implicit actorSystem: Acto
   session.execute(createTable)
 
   val createEventStmt = session.prepare(createEvent).setConsistencyLevel(writeConsistency)
+  val setRoomTopicStmt = session.prepare(updateRoomTopic).setConsistencyLevel(writeConsistency)
   val selectLatestEventsStmt = session.prepare(selectLatestEvents).setConsistencyLevel(readConsistency)
   val selectOlderEventsStmt = session.prepare(selectOlderEvents).setConsistencyLevel(readConsistency)
   val selectLatestSeqNrStmt = session.prepare(selectLatestSeqNr).setConsistencyLevel(readConsistency)
@@ -69,6 +72,11 @@ class CassandraPersistence(val config: Configuration)(implicit actorSystem: Acto
 
   def getTopic(room: RoomId): Option[String] =
     Option(session.execute(selectLatestTopicStmt.bind(room)).one).map(_.getString(0))
+
+  def setTopic(room: RoomId, topic: String): Unit = {
+    log.debug("Setting the topic of the room '{}' to '{}'", room, topic)
+    session.execute(setRoomTopicStmt.bind(topic, room))
+  }
 
   def dropRoomHistory(room: RoomId): Unit = session.execute(dropRoomHistoryStmt.bind(room))
 

@@ -27,6 +27,8 @@ sealed trait RoomOp extends OperationRequest
 
 case class Message(txt: String)
 
+case class RoomTopicMessage(`#`: Long, topic: String, sender: User, when: DateTime)
+
 case class SeqEnvelope(seqNr: Long, sender: User, msg: Message, time: DateTime)
 
 case class FetchBefore(before: Long)
@@ -49,8 +51,14 @@ case class Away(r: RoomId) extends RoomOp
 
 case class BroadcastMessageRequest(r: RoomId, data: Message) extends RoomOp
 
+case class SetRoomTopicResponse(r: RoomId, data: RoomTopicMessage) extends RoomOp
+
 //coming from user (REQUEST)
 case class RoomMessage(r: RoomId, envelope: SeqEnvelope)
+
+case class NewTopic(topic: String)
+
+case class SetRoomTopicRequest(r: RoomId, data: NewTopic) extends RoomOp
 
 //going to room (RESPONSE)
 case class Fetch(r: RoomId, data: FetchBefore) extends RoomOp
@@ -67,7 +75,19 @@ object DefaultFormats {
   implicit val setUserInfoReqFmt = Json.format[SetUserInfoRequest]
   implicit val userInfoModFmt = Json.format[UserInfoModification]
   implicit val msgFmt = Json.format[Message]
-  //  implicit val seqEnvFmt = Json.format[SeqEnvelope]
+  implicit val rtmFmt = Json.format[RoomTopicMessage]
+  implicit val newTopicFmt = Json.format[NewTopic]
+  implicit val srtReqFmt = Json.format[SetRoomTopicRequest]
+
+
+  implicit val setRoomTopicWrites = new Writes[SetRoomTopicResponse] {
+    def writes(resp: SetRoomTopicResponse): JsValue =
+      Json.obj(
+        "r" -> resp.r,
+        "o" -> "set-room-topic",
+        "data" -> Json.toJson(resp.data)
+      )
+  }
   implicit val seqEnvWrites = new Writes[SeqEnvelope] {
     def writes(env: SeqEnvelope): JsValue =
       Json.obj(

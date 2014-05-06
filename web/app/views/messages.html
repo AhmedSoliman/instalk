@@ -1,4 +1,7 @@
 <div id="messages-box" class="col-md-9">
+  <div class="row">
+    <div class="col-md-12 text-center"><a href="#" editable-text="room.topic" onaftersave="setRoomTopic()">{{ room.topic || 'Set A Topic For This Room Now!' }}</a></div>
+  </div>
   <div ng-repeat="message in messages">
     <div class="row" ng-class="{own: message.data.msg.sender.username == user.username}">
       <div ng-switch="message.o">
@@ -21,6 +24,10 @@
         </div>
         <div ng-switch-when="set-user-info">
           <div class="col-md-offset-2 col-md-8"><em>{{ message.data.originalUsername }}</em> is now identified as <div class="user-color" style="background-color: {{message.data.newUserInfo.info.color}}" ng-if="message.data.newUserInfo.info.color"></div> <strong>{{ message.data.newUserInfo.info.name }}</strong>.</div>
+          <div class="col-md-2"><span am-time-ago="message.data.when"></div>
+        </div>
+        <div ng-switch-when="set-room-topic">
+          <div class="col-md-offset-2 col-md-8"><em>{{message.data.sender.info.name}}</em> changed the room topic to  <em>{{ message.data.topic }}</em>.</div>
           <div class="col-md-2"><span am-time-ago="message.data.when"></div>
         </div>
       </div>

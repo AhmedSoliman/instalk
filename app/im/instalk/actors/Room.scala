@@ -26,7 +26,7 @@ import im.instalk.actors.Room.UpdateUser
 
 object Room {
 
-  case class RoomJoined(r: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject])
+  case class RoomJoined(r: RoomId, members: Iterable[User], lastMessages: Iterable[JsObject], topic: String)
 
   case class UpdateUser(newUser: User)
 
@@ -38,7 +38,7 @@ object Room {
 class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLogging {
   log.info("Room {} created", roomId)
   var seqNr = persistence.getNextAvailableSeqNr(roomId).getOrElse(0l)
-  var topic = persistence.getTopic(roomId).getOrElse("")
+  def topic = persistence.getTopic(roomId).getOrElse("")
   var members = Map.empty[ActorRef, User]
 
   def lastMessages: Iterable[JsObject] = persistence.getLatestMessages(roomId)
@@ -46,7 +46,7 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
   def receive = {
     case JoinOrCreate(_, u) =>
       //send him welcome message
-      sender ! Room.RoomJoined(roomId, members.values.toSet - u, lastMessages)
+      sender ! Room.RoomJoined(roomId, members.values.toSet - u, lastMessages, topic)
       if (!members.values.exists(_ == u))
         publish(Responses.joinedRoom(roomId, u, DateTime.now()))
       //put the guy in the members
@@ -73,9 +73,9 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
 
           //publish that we changed the guy
           val data = Responses.setUserInfo(SetUserInfo(roomId, UserInfoModification(seqNr, oldUser.username, newUser, DateTime.now())))
-          publish(data)
           persistence.storeEvent(roomId, seqNr, "set-user-info", data, topic, members.values)
           seqNr += 1
+          publish(data)
 
       }
     case o: BroadcastMessageRequest =>
@@ -88,6 +88,13 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
         case None =>
           send(sender, Errors.notMemberInRoom)
       }
+    case srt: SetRoomTopicRequest =>
+      val data = Responses.setRoomTopic(SetRoomTopicResponse(roomId, RoomTopicMessage(seqNr, srt.data.topic, members(sender), DateTime.now())))
+      persistence.storeEvent(roomId, seqNr, "set-room-topic", data, topic, members.values)
+      persistence.setTopic(roomId, srt.data.topic)
+      seqNr += 1
+      publish(data)
+
     case Terminated(who) =>
       //somebody left, advertise leaving
       leave(false, who)

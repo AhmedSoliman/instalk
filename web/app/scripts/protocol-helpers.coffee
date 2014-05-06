@@ -27,6 +27,9 @@ Instalk.Protocol =
       when 'set-user-info'
         $log.debug 'Protocol :: USER-INFO:', data
         callback data for callback in callbacks['userInfoUpdate']
+      when 'set-room-topic'
+        $log.debug 'Protocol :: SET-ROOM-TOPIC:', data
+        callback data for callback in callbacks['setRoomTopic']
 
       else
         $log.error 'Protocol :: ERROR :: I could not handle:', data
@@ -44,6 +47,11 @@ Instalk.Protocol =
     data:
       txt: message
 
+  setRoomTopic: (roomId, topic) ->
+    r: roomId,
+    o: 'set-room-topic',
+    data:
+      topic: topic
 
   joinRoom: (roomId) ->
     r: roomId,

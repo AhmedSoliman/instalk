@@ -38,10 +38,12 @@ If you want to join a room, you start by sending a room identifier in your join 
 You should expect to get a welcome message like
 
 ```
-{"r":"MyRoomID","o":"room-welcome","data":{"members":[], "messages":[]}}
+{"r":"MyRoomID","o":"room-welcome","data":{"members":[], "messages":[], "topic": "My Topic"}}
 ```
+
 The `data/members` attribute includes all the members of this room, it's an empty list meaning that it's a freshly created room. If there are members in this room already, you will be seeing something like
 The `data/messages` attribute includes the latest messages in this room if any
+
 ```
 {
   "r": "MyRoomId", "o": "room-welcome", 
@@ -143,8 +145,27 @@ When you send a message to the room, it gets persisted in the Cassandra store, t
 
   - Identification Request
   - Setting Topic
+  - Users changing their identity
 
 Those events take a sequence number same as messages so they can be traversed and replayed by the server
+
+## Setting a room topic
+The users can decide to change the room topic he need to send a request like that
+
+```
+{"r": "8jkk98", "o": "set-room-topic", "data": {"topic": "Hello Roomie"}}
+```
+If all went well, the room will send this identification to all members of the room
+
+```
+{"r": "8jkk98", "o": "set-room-topic", "data": 
+  {"#": 72,
+   "topic": "How Life is going with you?",
+   "sender": <user object>,
+   "when": 2342342342
+  }
+}
+```
 
 ## Identifying Yourself
 
@@ -197,7 +218,8 @@ Everybody in all the rooms who has this guy in will receive an advertisment abou
 		"info": {
 			"name": "Ahmed Soliman",
 			"color": "#662255"
-		}
+		},
+    "when": 234234234234,
 	}
 }
 ```
