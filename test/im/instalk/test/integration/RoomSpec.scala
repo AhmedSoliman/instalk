@@ -23,7 +23,7 @@ import akka.testkit._
 import akka.actor._
 import play.api.libs.json._
 import scala.concurrent.duration._
-import im.instalk.protocol.Message
+import im.instalk.protocol.{RoomOp, Message}
 
 /**
  * add your integration spec here.
@@ -57,10 +57,10 @@ with Matchers with PlayServer with Helpers {
             withSocket(true) {
               (client3, probe3) =>
 
-              /** actual Implementation **/
+                /** actual Implementation **/
                 val user3 = initialise(client3, probe3)
                 joinRoom(room, client3, probe3)._1 should have size (0) //client 3 created the room
-                val u2 = joinRoom(room, client2, probe2) //client 2 joined the room
+              val u2 = joinRoom(room, client2, probe2) //client 2 joined the room
                 u2._1 should have size (1)
                 u2._1.head should equal(user3)
                 matchJoined(toJson(probe3.expectMsgType[TextMessage].text), room, user2) //client 3 should get a notification about client 2
@@ -70,8 +70,8 @@ with Matchers with PlayServer with Helpers {
 
                 matchJoined(toJson(probe3.expectMsgType[TextMessage].text), room, user1) //client 3 should get a notification about client 1
                 matchJoined(toJson(probe2.expectMsgType[TextMessage].text), room, user1) //client 2 should get a notification about client 1
-                //now total 3 are in the room. let's send a message
-                val msg1 = Message("Hello World")
+              //now total 3 are in the room. let's send a message
+              val msg1 = Message("Hello World")
                 val msg2 = Message("Nice Work")
                 sendMessage(room, client1, msg1) //client 1 sent message
                 Thread.sleep(500)
@@ -138,7 +138,7 @@ with Matchers with PlayServer with Helpers {
             sendMessage(room, client1, msg4)
             withSocket(true) {
               (client3, probe3) =>
-              //assert that the room will sync the 4 history messages in correct order
+                //assert that the room will sync the 4 history messages in correct order
                 initialise(client3, probe3)
                 val uj3 = joinRoom(room, client3, probe3)
                 val latestMessages = uj3._2
@@ -155,7 +155,7 @@ with Matchers with PlayServer with Helpers {
         }
     }
   }
-  it should "fetch messages correct messages when I send fetch operation" in {
+  it should "fetch correct messages when I send fetch operation" in {
     val room = "Neo"
     //delete the history first
     import im.instalk.global.Instalk
@@ -195,4 +195,120 @@ with Matchers with PlayServer with Helpers {
         }
     }
   }
+  it should "accept and broadcast the Begin Typing event" in {
+    val room = "Anderson"
+    //delete the history first
+    import im.instalk.global.Instalk
+    Instalk.persistence().dropRoomHistory(room)
+    val bt = "bt"
+
+    withSocket(true) {
+      (client1, probe1) =>
+        val user1 = initialise(client1, probe1)
+        joinRoom(room, client1, probe1)
+        withSocket(true) {
+          (client2, probe2) =>
+            val user2 = initialise(client2, probe2)
+            joinRoom(room, client2, probe2)
+            withSocket(true) {
+              (client3, probe3) =>
+                val user3 = initialise(client3, probe3)
+                joinRoom(room, client3, probe3)
+                //escape the room welcome messages
+                probe1.receiveN(2)
+                probe2.receiveN(1)
+
+                chatEvent(room, bt, client1, probe1) should equal(user1.username)
+                expectChatEventMessage(room, bt, client2, probe2) should equal(user1.username)
+                expectChatEventMessage(room, bt, client3, probe3) should equal(user1.username)
+
+                chatEvent(room, bt, client2, probe2) should equal(user2.username)
+                expectChatEventMessage(room, bt, client1, probe1) should equal(user2.username)
+                expectChatEventMessage(room, bt, client3, probe3) should equal(user2.username)
+
+                chatEvent(room, bt, client3, probe3) should equal(user3.username)
+                expectChatEventMessage(room, bt, client1, probe1) should equal(user3.username)
+                expectChatEventMessage(room, bt, client2, probe2) should equal(user3.username)
+            }
+        }
+
+    }
+  }
+  it should "accept and broadcast the Stopped Typing event" in {
+    val room = "Trinity"
+    //delete the history first
+    import im.instalk.global.Instalk
+    Instalk.persistence().dropRoomHistory(room)
+    val st = "st"
+
+    withSocket(true) {
+      (client1, probe1) =>
+        val user1 = initialise(client1, probe1)
+        joinRoom(room, client1, probe1)
+        withSocket(true) {
+          (client2, probe2) =>
+            val user2 = initialise(client2, probe2)
+            joinRoom(room, client2, probe2)
+            withSocket(true) {
+              (client3, probe3) =>
+                val user3 = initialise(client3, probe3)
+                joinRoom(room, client3, probe3)
+                //escape the room welcome messages
+                probe1.receiveN(2)
+                probe2.receiveN(1)
+
+                chatEvent(room, st, client1, probe1) should equal(user1.username)
+                expectChatEventMessage(room, st, client2, probe2) should equal(user1.username)
+                expectChatEventMessage(room, st, client3, probe3) should equal(user1.username)
+
+                chatEvent(room, st, client2, probe2) should equal(user2.username)
+                expectChatEventMessage(room, st, client1, probe1) should equal(user2.username)
+                expectChatEventMessage(room, st, client3, probe3) should equal(user2.username)
+
+                chatEvent(room, st, client3, probe3) should equal(user3.username)
+                expectChatEventMessage(room, st, client1, probe1) should equal(user3.username)
+                expectChatEventMessage(room, st, client2, probe2) should equal(user3.username)
+            }
+        }
+    }
+  }
+  it should "accept and broadcast the Away event" in {
+    val room = "Trinity"
+    //delete the history first
+    import im.instalk.global.Instalk
+    Instalk.persistence().dropRoomHistory(room)
+    val away = "away"
+
+    withSocket(true) {
+      (client1, probe1) =>
+        val user1 = initialise(client1, probe1)
+        joinRoom(room, client1, probe1)
+        withSocket(true) {
+          (client2, probe2) =>
+            val user2 = initialise(client2, probe2)
+            joinRoom(room, client2, probe2)
+            withSocket(true) {
+              (client3, probe3) =>
+                val user3 = initialise(client3, probe3)
+                joinRoom(room, client3, probe3)
+                //escape the room welcome messages
+                probe1.receiveN(2)
+                probe2.receiveN(1)
+
+                chatEvent(room, away, client1, probe1) should equal(user1.username)
+                expectChatEventMessage(room, away, client2, probe2) should equal(user1.username)
+                expectChatEventMessage(room, away, client3, probe3) should equal(user1.username)
+
+                chatEvent(room, away, client2, probe2) should equal(user2.username)
+                expectChatEventMessage(room, away, client1, probe1) should equal(user2.username)
+                expectChatEventMessage(room, away, client3, probe3) should equal(user2.username)
+
+                chatEvent(room, away, client3, probe3) should equal(user3.username)
+                expectChatEventMessage(room, away, client1, probe1) should equal(user3.username)
+                expectChatEventMessage(room, away, client2, probe2) should equal(user3.username)
+            }
+        }
+    }
+  }
+
 }

@@ -38,7 +38,9 @@ object Room {
 class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLogging {
   log.info("Room {} created", roomId)
   var seqNr = persistence.getNextAvailableSeqNr(roomId).getOrElse(0l)
+
   def topic = persistence.getTopic(roomId).getOrElse("")
+
   var members = Map.empty[ActorRef, User]
 
   def lastMessages: Iterable[JsObject] = persistence.getLatestMessages(roomId)
@@ -54,7 +56,6 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
       context watch sender
     case Leave(_) =>
       leave(true, sender)
-
     case UpdateUser(newUser) =>
       members.get(sender).map {
         oldUser =>
@@ -94,14 +95,33 @@ class Room(roomId: RoomId, persistence: Persistence) extends Actor with ActorLog
       persistence.setTopic(roomId, srt.data.topic)
       seqNr += 1
       publish(data)
-
+    case o: BeginTyping =>
+      members.get(sender) match {
+        case Some(user) =>
+          publish(Responses.beginTyping(roomId, user))
+        case None =>
+          send(sender, Errors.notMemberInRoom)
+      }
+    case o: StoppedTyping =>
+      members.get(sender) match {
+        case Some(user) =>
+          publish(Responses.stoppedTyping(roomId, user))
+        case None =>
+          send(sender, Errors.notMemberInRoom)
+      }
+    case o: Away =>
+      members.get(sender) match {
+        case Some(user) =>
+          publish(Responses.away(roomId, user))
+        case None =>
+          send(sender, Errors.notMemberInRoom)
+      }
     case Terminated(who) =>
       //somebody left, advertise leaving
       leave(false, who)
     case Fetch(r, data) =>
       val result = Responses.fetchBefore(roomId, persistence.syncRoom(roomId, data.before))
       send(sender, result)
-
   }
 
   def leave(notifyHim: Boolean, who: ActorRef): Unit = {

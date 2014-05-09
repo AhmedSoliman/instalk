@@ -124,6 +124,31 @@ package object protocol {
         "messages" -> Json.toJson(lastMessages)
       )
     )
+
+    def beginTyping(roomId: RoomId, who: User): JsObject = Json.obj(
+      "r" -> roomId,
+      "o" -> "bt",
+      "data" -> Json.obj(
+        "sender" -> who.username,
+        "when" -> DateTime.now
+      )
+    )
+    def stoppedTyping(roomId: RoomId, who: User): JsObject = Json.obj(
+      "r" -> roomId,
+      "o" -> "st",
+      "data" -> Json.obj(
+        "sender" -> who.username,
+        "when" -> DateTime.now
+      )
+    )
+    def away(roomId: RoomId, who: User): JsObject = Json.obj(
+      "r" -> roomId,
+      "o" -> "away",
+      "data" -> Json.obj(
+        "sender" -> who.username,
+        "when" -> DateTime.now
+      )
+    )
   }
 
   object Errors {
