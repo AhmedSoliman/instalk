@@ -17,10 +17,21 @@ Instalk.myApp
       data = JSON.parse ev.data
       Instalk.Protocol.handleMessage $log, data, _callbacks
 
-    reconnect = () ->
-      WebSocket.onmessage onBeforeWelcomeMessage
+    reconnect = (resetHandlers) ->
+      $log.debug("RESET HANDLERS:", resetHandlers)
+      if resetHandlers
+        $log.debug("Cleaning up WebSocket handlers...")
+        _callbacks = {}
+        _initialised = false
+        try
+          WebSocket.onclose () -> undefined
+          WebSocket.onmessage () -> undefined
+          WebSocket.close()
+        catch error
+          $log.warning("could not close the old websocket")
       $log.info 'Reconnecting to the WebSocket...'
       WebSocket.new()
+      WebSocket.onmessage onBeforeWelcomeMessage
 
     WebSocket.onopen () ->
       $log.info 'WebSocket Connected...'
@@ -30,6 +41,7 @@ Instalk.myApp
     WebSocket.onclose () ->
       $log.info 'WebSocket Closed...'
       _initialised = false
+      _callbacks = {}
 
     WebSocket.onmessage onBeforeWelcomeMessage
 
@@ -42,7 +54,7 @@ Instalk.myApp
 
 
     # Return
-    reconnect: () ->  reconnect()
+    reconnect: (resetHandlers) ->  reconnect(resetHandlers)
     currentState: () -> WebSocket.states[WebSocket.readyState()]
     isOnline: () -> @currentState() == 'OPEN' and _initialised
     isInitialised: () -> _initialised
@@ -73,6 +85,12 @@ Instalk.myApp
       else
         throw new Instalk.Errors.IllegalStateError('Not Initialised', 'You cannot send a message unless your connection is _initialised!')
 
+    beginTyping: (room) ->
+      WebSocket.send JSON.stringify Instalk.Protocol.beginTyping(room)
+
+    stopTyping: (room) ->
+      WebSocket.send JSON.stringify Instalk.Protocol.stopTyping(room)
+
     onUserInfoUpdate: (callback) ->
       registerEvent 'userInfoUpdate', callback
 
@@ -86,6 +104,7 @@ Instalk.myApp
       registerEvent 'left', callback
 
     onWelcome: (callback) ->
+      $log.debug("Registering for WELCOME")
       registerEvent 'welcome', callback
 
     onMessage: (callback) ->
@@ -93,6 +112,13 @@ Instalk.myApp
 
     onRoomTopicChange: (callback) ->
       registerEvent 'setRoomTopic', callback
+
+    onBeginTyping: (callback) ->
+      registerEvent 'beginTyping', callback
+
+    onStopTyping: (callback) ->
+      registerEvent 'stopTyping', callback
+
     ]
 
 

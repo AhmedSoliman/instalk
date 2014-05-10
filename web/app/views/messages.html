@@ -3,7 +3,7 @@
 </div>
 
 <div id="messages">
-  <div ng-repeat="message in messages">
+  <div ng-repeat="message in messages track by $index">
     <div ng-switch="message.o">
       <div ng-switch-when="msg">
         <div ng-include="src='views/txt-message.html'"></div>
@@ -24,8 +24,12 @@
   </div>
 </div>
 
+<div id="typing-now" ng-show="isSomeoneTyping()">
+      <span>{{whoIsTyping()}}</span>
+    <span> typing...
+  </div>
 <!-- New Message Box -->
 <form name="msgForm" id="new-message" ng-submit="sendMessage()">
-  <input for="message" type="text"  placeholder="Say something..." ng-model="$parent.form.msg" autofocus required>
+  <input for="message" type="text"  placeholder="Say something..." ng-model="$parent.form.msg" ng-keyup="beginTyping($event)" autofocus required>
   <button type="submit" ng-disabled="! isOnline() || ! $parent.form.msg"><i class="fa fa-chevron-right"></i></button>
 </form>

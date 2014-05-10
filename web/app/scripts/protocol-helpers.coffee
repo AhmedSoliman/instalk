@@ -30,7 +30,12 @@ Instalk.Protocol =
       when 'set-room-topic'
         $log.debug 'Protocol :: SET-ROOM-TOPIC:', data
         callback data for callback in callbacks['setRoomTopic']
-
+      when 'bt'
+        $log.debug 'Protocol :: BeginTyping :', data
+        callback data for callback in callbacks['beginTyping']
+      when 'st'
+        $log.debug 'Protocol :: StopTyping :', data
+        callback data for callback in callbacks['stopTyping']
       else
         $log.error 'Protocol :: ERROR :: I could not handle:', data
 
@@ -46,6 +51,14 @@ Instalk.Protocol =
     o: 'msg',
     data:
       txt: message
+
+  beginTyping: (room) ->
+    r: room,
+    o: "bt"
+
+  stopTyping: (room) ->
+    r: room,
+    o: "st"
 
   setRoomTopic: (roomId, topic) ->
     r: roomId,

@@ -142,6 +142,7 @@ a {
   border-top: solid 1px rgba(228, 228, 228, 1);
   height: $new-message-height;
   background: $gray-color;
+  z-index: 90;
   input[type="text"] {
     width: 90%;
     height: 40px;
@@ -289,6 +290,17 @@ a {
 
 a.editable-click {
   color: $foreground-color;
+}
+
+#typing-now {
+  position: absolute;
+  z-index: 80;
+  left: 0;
+  bottom: $new-message-height;
+  width: 100%;
+  background: #fff2bd;
+  height: 30px;
+  overflow: hidden;
 }
 // OLD SHIT
 
