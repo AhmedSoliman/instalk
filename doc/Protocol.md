@@ -33,7 +33,7 @@ Once you connect and initialise your connection properly, you are at the lobby, 
 If you want to join a room, you start by sending a room identifier in your join request. Clients can generate random Room ID if a room is not provided in the URL.
 
 ```
-{"r": "MyRoomID", "o": join}
+{"r": "MyRoomID", "o": "join"}
 ```
 You should expect to get a welcome message like
 
@@ -46,7 +46,7 @@ The `data/messages` attribute includes the latest messages in this room if any
 
 ```
 {
-  "r": "MyRoomId", "o": "room-welcome", 
+  "r": "MyRoomID", "o": "room-welcome",
   "data": {
       "members": [{"color": "#55BBAF","username": "Ahmed Soliman"}]
    }
@@ -55,7 +55,7 @@ The `data/messages` attribute includes the latest messages in this room if any
 Others in the room will receive an `Event` that you have joined to the room
 
 ```
-{"r": "MyRoomId", "o": "join", 
+{"r": "MyRoomID", "o": "join",
   "data": {
     "user": {"color": "#55BBAF","username": "Ahmed Soliman"}, 
     "when": 1398592566109
@@ -66,19 +66,19 @@ Others in the room will receive an `Event` that you have joined to the room
 If you are planning to purposely leave a room, you need to send a leave request (note that closing your websocket connection automatically does that to all your rooms)
 
 ```
-{"r": "MyRoomId", "o": "leave"}
+{"r": "MyRoomID", "o": "leave"}
 
 ```
 As a response, you will receive
 
 ```
-{"r":"MyRoomId","o":"room-bye"}
+{"r":"MyRoomID","o":"room-bye"}
 ```
 
 Other members of the room will receive an `Event` that you left, they will be receiving this message in your case
 
 ```
-{"r": "MyRoomId", "o": "left", "data": 
+{"r": "MyRoomID", "o": "left", "data":
   {
    "user": {"color": "#55BBAF","username": "Ahmed Soliman"}, 
    "when": 1398592566109
@@ -90,12 +90,12 @@ Other members of the room will receive an `Event` that you left, they will be re
 Once you are a member of a room you can start sending messages to the users of the room by sending requests like this
 
 ```
-{"r": "MyRoomId", "o": "msg", "data": {"txt": "Hello World"}}
+{"r": "MyRoomID", "o": "msg", "data": {"txt": "Hello World"}}
 ```
 The server then will add a sequential `#` number for your message and distribute your message to everybody in the room _including yourself_ after adding more data to it, your message in this case will be
 
 ```
-{"r": "MyRoomId", "o": "msg", "data":
+{"r": "MyRoomID", "o": "msg", "data":
   {
    "msg": {
      "#": 1,
@@ -123,7 +123,7 @@ The fields of the object `Message` is subject to change in the future, now it on
 When the clients asks for previous messages in the room history, client will specify its oldest message number
 
 ```
-{ "r": "8BjK8",
+{ "r": "MyRoomID",
   "o": "fetch",
   "data": {
         "before": seqNr
@@ -133,7 +133,7 @@ When the clients asks for previous messages in the room history, client will spe
 server will respond with a punch of fixed number of messages older than the provided messages number
 
 ```
-{ "r": "8BjK8",
+{ "r": "MyRoomID",
   "o": "fetch",
   "data" {
         "messages": []
@@ -234,7 +234,50 @@ Once you set your name the browser will keep this information in the cookie as:
 
 ## Authenticating A User [TODO]
 
-#### Proposed Ideas [Under Development/Disabled By Default]
+## Chat Events
+Instalk client should send chat events to server to distribute it to the room participants
+
+### Begin Typing
+Client should send an event when the user begins typing a message
+
+```
+{"r": "MyRoomID", "o": "bt"}
+```
+
+Server will distribute this event to the participants' clients like this
+
+```
+{"r": "MyRoomID", "o": "bt", "data": {"sender" : Username, "when": Timestamp}}
+```
+
+### Stop Typing
+Client should send and event when the user stops typing
+
+```
+{"r": "MyRoomID", "o": "st"}
+```
+
+Server will distribute this event to the participants' clients like this
+
+```
+{"r": "MyRoomID", "o": "st", "data": {"sender" : Username, "when": Timestamp}}
+```
+
+### Away
+Client should send an event the user got Away from the room (if the user left the room browser tab)
+
+```
+{"r": "MyRoomID", "o": "away"}
+```
+
+Server will distribute this event to the participants' clients like this
+
+```
+{"r": "MyRoomID", "o": "away", "data": {"sender" : Username, "when": Timestamp}}
+```
+
+------------------------------------------------------------------------------------------------------------------------------------
+### Proposed Ideas [Under Development/Disabled By Default]
 
   //HEART BEAT
   {"heart-beat": 1} //1 can be any number
@@ -242,35 +285,29 @@ Once you set your name the browser will keep this information in the cookie as:
 
 
   //Server then will synchronize the member list and replay the last 50 messages to you
-  SERVER: {"r": "8BjK8", "o": "room-welcome", "data": {
+  SERVER: {"r": "MyRoomID", "o": "room-welcome", "data": {
       "members" : [/*identity*/],
   }
 
   OR
 
-  SERVER: {"r": "8BjK8", "o": "join-failed", "reason": {/* error */}}
+  SERVER: {"r": "MyRoomID", "o": "join-failed", "reason": {/* error */}}
 
 
  //Leave Room
  CLIENT: {"r": "8c662", "o": "leave"}
  SERVER: {"r": "8c66s", "o": "room-bye"}
 
-  // Events
-  CLIENT: {"r": "8BjK8", "o": "bt"} //server will distribute as is (begin typing) (o: Operation) (r: Room)
-  SERVER to distribute: {"r": "8BjK8", "o": "bt", "data": {"sender" : Username, "when": Timestamp}}
-  CLIENT: {"r": "8BjK8", "o": "st"} //server will distribute as is (stop typing)
-  CLIENT: {"r": "8BjK8", "o": "away"} //Client can should send if the user left the room browser tab
-  
   //Sending Message
-  {"r": "8BjK8", "o": "msg", "data": {"message": /* message */}} // (msg does not contain a "nr" field and no "time" (it's generated by server))
+  {"r": "MyRoomID", "o": "msg", "data": {"message": /* message */}} // (msg does not contain a "nr" field and no "time" (it's generated by server))
   // Receiving Message
-  {"r": "8BjK8", "o": "msg", "data": {"sender": "username", "message": /* message+SeqNr */}, "when": Timestamp} // (msg does not contain a "nr" field and no "time" (it's generated by server))
+  {"r": "MyRoomID", "o": "msg", "data": {"sender": "username", "message": /* message+SeqNr */}, "when": Timestamp} // (msg does not contain a "nr" field and no "time" (it's generated by server))
 
   //Get previous messages; client should send the ID of last message he received
-  CLIENT: {"r": "8BjK8", "o": "load", "data": {"last-msg-nr": 23}}
+  CLIENT: {"r": "MyRoomID", "o": "load", "data": {"last-msg-nr": 23}}
   //Server will respond with a fixed number(10) of messages before this message ID,
   //Server will reply with empty list of messages if it reached the begining of history
-  SERVER: {"r": "8BjK8", "o": "load", "data": {"messages": [{/*Messages*/}]}}
+  SERVER: {"r": "MyRoomID", "o": "load", "data": {"messages": [{/*Messages*/}]}}
   
   //Authentication/Identification
   //Client -> Server
@@ -289,13 +326,13 @@ Once you set your name the browser will keep this information in the cookie as:
   
   //Events
   //Begin Typing
-  {"r": "8BjK8", "sid": "66Gb771399", "o": "bt", "time": "ISO-DateTime in EJSON format"}
+  {"r": "MyRoomID", "sid": "66Gb771399", "o": "bt", "time": "ISO-DateTime in EJSON format"}
   //Stopped Typing
-  {"r": "8BjK8", "sid": "66Gb771399", "o": "st", "time": "ISO-DateTime in EJSON format"}
+  {"r": "MyRoomID", "sid": "66Gb771399", "o": "st", "time": "ISO-DateTime in EJSON format"}
   //Away
-  {"r": "8BjK8", "sid": "66Gb771399", "o": "away", "time": "ISO-DateTime in EJSON format"}
+  {"r": "MyRoomID", "sid": "66Gb771399", "o": "away", "time": "ISO-DateTime in EJSON format"}
   //Disconnected, Server will distribute this even if the client channel got closed
-  {"r": "8BjK8", "sid": "66Gb771399", "o": "disconnect", "time": "ISO-DateTime in EJSON format"}
+  {"r": "MyRoomID", "sid": "66Gb771399", "o": "disconnect", "time": "ISO-DateTime in EJSON format"}
   
   // Identified User
   {"username": "AhmedSoliman", "color": "#22BBFF", verified: false}

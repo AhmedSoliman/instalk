@@ -58,7 +58,8 @@ class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteA
   protected val client = context.actorOf(clientProps(user, self))
 
   log.debug("WebSocketActor created for client at ({})", remoteAddress)
-  val idleTerminationPeriod: FiniteDuration = current.configuration.getMilliseconds("instalk.websocket.idle-terminate-grace-period").map(Duration(_, TimeUnit.MILLISECONDS)).getOrElse(10.seconds)
+  //TODO grace periodconfig parameter should be add to the config file
+  val idleTerminationPeriod: FiniteDuration = current.configuration.getMilliseconds("instalk.websocket.idle-terminate-grace-period").map(Duration(_, TimeUnit.MILLISECONDS)).getOrElse(30.seconds)
   private[this] val terminationGun = context.system.scheduler.scheduleOnce(idleTerminationPeriod, self, Bored)
 
   def uninitialized: Receive = {

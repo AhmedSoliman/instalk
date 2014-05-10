@@ -26,6 +26,7 @@ import org.joda.time.DateTime
 
 trait Helpers {
   this: TestKit with Suite with Matchers with FlatSpecLike =>
+
   import im.instalk.protocol.DefaultFormats._
 
   def initialise(socket: WebSocketClient, probe: TestProbe): User = {
@@ -35,8 +36,8 @@ trait Helpers {
         val msg = Json.parse(m)
         (msg \ "welcome").as[Int] should equal(1)
         val user = (msg \ "user").as[User]
-        user.color should startWith("#")
-        user.color should have size (7)
+//        user.color should startWith("#")
+//        user.color should have size (7)
         user.username should startWith("Anonymous-")
         user
     }
@@ -101,8 +102,8 @@ trait Helpers {
     probe.expectMsgPF(5.seconds) {
       case TextMessage(_, m) =>
         val response = Json.parse(m).as[JsObject]
-        (response \ "r").asOpt[RoomId] should be (Some(room))
-        (response \ "o").asOpt[String] should be (Some("msg"))
+        (response \ "r").asOpt[RoomId] should be(Some(room))
+        (response \ "o").asOpt[String] should be(Some("msg"))
         ((response \ "data" \ "msg" \ "sender").as[User],
           (response \ "data" \ "msg" \ "#").as[Long],
           (response \ "data" \ "msg").as[Message])
@@ -110,12 +111,12 @@ trait Helpers {
     }
   }
 
-  def receiveEvent(room: RoomId, op: String , probe: TestProbe): User = {
+  def receiveEvent(room: RoomId, op: String, probe: TestProbe): User = {
     probe.expectMsgPF(5.seconds) {
       case TextMessage(_, m) =>
         val response = Json.parse(m).as[JsObject]
-        (response \ "r").asOpt[RoomId] should be (Some(room))
-        (response \ "o").asOpt[String] should be (Some(op))
+        (response \ "r").asOpt[RoomId] should be(Some(room))
+        (response \ "o").asOpt[String] should be(Some(op))
         (response \ "data" \ "user").as[User]
     }
 
@@ -134,6 +135,26 @@ trait Helpers {
         (response \ "o").as[String] should equal("fetch")
         (response \ "data" \ "messages").as[List[JsObject]]
     }
+  }
+
+  def chatEvent(r: RoomId, e: String, socket: WebSocketClient, probe: TestProbe): String = {
+    socket.send(Json.obj(
+      "r" -> r,
+      "o" -> e
+    ))
+    expectChatEventMessage(r, e, socket, probe)
+  }
+
+  def expectChatEventMessage(r: RoomId, e: String, socket: WebSocketClient, probe: TestProbe): String = {
+    probe.expectMsgPF(5.seconds) {
+    case TextMessage(socket, msg) =>
+    val response = Json.parse(msg)
+    (response \ "r").as[String] should equal(r)
+    (response \ "o").as[String] should equal(e)
+    (response \ "data" \ "when").as[Long] should (be < DateTime.now.getMillis and be > DateTime.now.getMillis - 5000)
+    (response \ "data" \ "sender").as[String]
+  }
+
   }
 
 }
