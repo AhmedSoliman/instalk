@@ -1,0 +1,8 @@
+<div class="message grid event">
+  <div class="message-body col-2 shift-1">
+    <code>@{{ message.data.originalUsername }}</code> Changed his identity to <div title="{{ message.data.originalUsername }}" class="avatar" style="background-color: {{ message.data.newUserInfo.info.color }}">
+      <i class="fa fa-user"></i>
+    </div><span> {{ message.data.newUserInfo.info.name }}</span>
+  </div>
+  <div class="time col-3">{{message.data.when | amDateFormat:'h:mm a'}}</div>
+</div>

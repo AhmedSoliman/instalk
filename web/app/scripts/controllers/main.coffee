@@ -8,14 +8,20 @@ unless Array::filter
     element for element in this when callback(element)
 
 Instalk.myApp
-  .controller 'MainCtrl', ['$scope', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $log, $routeParams, $cookies, InstalkProtocol) ->
+  .controller 'MainCtrl', ['$scope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
     _inRoom = false
     $scope.roomId = $routeParams.roomId
     $scope.room =
       topic: ""
     $scope.user = null
+    $scope.form = {}
     $scope.members = {}
     $scope.messages = []
+
+    scrollToBottom = () ->
+      $('#messages').animate({
+                        scrollTop: $('#messages').last()[0].scrollHeight
+                    }, 500)
 
     InstalkProtocol.onRoomWelcome (data) ->
       #actual init...
@@ -25,6 +31,8 @@ Instalk.myApp
       $scope.members = data.data.members.toDict 'username'
       $scope.messages = data.data.messages
       $scope.room.topic = data.data.topic
+      $timeout(scrollToBottom, 500)
+
 
     InstalkProtocol.onWelcome (user) ->
       $log.debug 'Got Welcome...'
@@ -36,19 +44,26 @@ Instalk.myApp
       $log.debug "#{data.data.user.username} joined the room"
       $scope.members[data.data.user.username] = data.data.user
       $scope.messages.push data
+      scrollToBottom()
+
 
     InstalkProtocol.onLeft (data) ->
       delete $scope.members[data.data.user.username]
       $log.debug "User: #{data.data.user.username} Left Room"
       $scope.messages.push data
+      scrollToBottom()
+
 
     InstalkProtocol.onMessage (data) ->
       $log.debug 'Adding Message To History:', data
       $scope.messages.push data
+      scrollToBottom()
 
     InstalkProtocol.onRoomTopicChange (data) ->
       $scope.messages.push data
       $scope.room.topic = data.data.topic
+      scrollToBottom()
+
 
     InstalkProtocol.onUserInfoUpdate (data) ->
       $scope.messages.push data
@@ -62,6 +77,7 @@ Instalk.myApp
         $log.debug 'Updating a member data to ', data.data.newUserInfo
         delete $scope.members[data.data.originalUsername]
         $scope.members[data.data.newUserInfo.username] = data.data.newUserInfo
+      scrollToBottom()
 
 
     $scope.away = () -> alert 'We are away!' #TODO
@@ -99,7 +115,7 @@ Instalk.myApp
       InstalkProtocol.setRoomTopic $scope.roomId, $scope.room.topic
 
     $scope.sendMessage = () ->
-      $log.debug 'Sending: ', $scope.msg
-      InstalkProtocol.sendMessage $scope.roomId, $scope.msg
-      $scope.msg = ''
+      $log.debug 'Sending: ', $scope.form.msg
+      InstalkProtocol.sendMessage $scope.roomId, $scope.form.msg
+      $scope.form.msg = ''
     ]

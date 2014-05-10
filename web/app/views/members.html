@@ -1,9 +1,16 @@
-        <div id="members-box" class="col-md-3">
-          <div id="myself">
-            <a href="#" editable-color="user.info.color" onaftersave="updateUserInfo()"><div class="user-color" style="background-color: {{user.info.color}}"></div></a>
-             <a href="#" editable-text="user.info.name" onaftersave="updateUserInfo()" title="{{ user.username}}">{{user.info.name}}</a>
-          </div>
-          <ul id="member-list" ng-repeat="member in members">
-            <li title="{{member.username}}"><div class="user-color" style="background-color: {{member.info.color}}"></div> {{ member.info.name }}</li>
-          </ul>
-        </div>
+ <ul id="member-list">
+  <li>
+    <a href="#" editable-color="user.info.color" onaftersave="updateUserInfo()">
+      <div class="avatar" style="background-color: {{user.info.color}}">
+        <i class="fa fa-user"></i>
+      </div>
+    </a>
+    <span><a href="#" editable-text="user.info.name" onaftersave="updateUserInfo()" title="{{ user.username}}">{{user.info.name}}</a> (me) — <a href="#">verify</a></span>
+  </li>
+  <div ng-repeat="member in members">
+    <li title="{{member.username}}"><div class="avatar" style="background-color: {{member.info.color}}"><i class="fa fa-user"></i></div><span>{{ member.info.name }}</span></li>
+
+  </div>
+</ul>
+
+<img id="logo" src="images/instalk-logo.png" height="50" alt="Instalk Logo">

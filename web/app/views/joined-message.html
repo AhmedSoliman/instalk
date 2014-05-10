@@ -1,0 +1,9 @@
+<div class="message grid event">
+  <div class="message-body col-2 shift-1">
+    <div title="{{ message.data.user.username}}" class="avatar" style="background-color: {{ message.data.user.info.color }}">
+      <i class="fa fa-user"></i>
+    </div>
+    <span>{{ message.data.user.info.name }} Just joined the room...</span>
+  </div>
+  <div class="time col-3">{{message.data.when | amDateFormat:'h:mm a'}}</div>
+</div>

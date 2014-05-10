@@ -1,0 +1,11 @@
+    <div class="message grid"
+    ng-class="{own: message.data.msg.sender.username == user.username}">
+    <div class="sender col-1">
+      <div title="{{ message.data.msg.sender.username}}" class="avatar" style="background-color: {{ message.data.msg.sender.info.color }}">
+        <i class="fa fa-user"></i>
+      </div>
+      <span>{{ message.data.msg.sender.info.name }}</span>
+    </div>
+    <div class="message-body col-2">{{ message.data.msg.txt }}</div>
+    <div class="time col-3">{{message.data.msg.time | amDateFormat:'h:mm a'}}</div>
+  </div>

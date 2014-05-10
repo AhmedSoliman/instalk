@@ -1,39 +1,31 @@
-<div id="messages-box" class="col-md-9">
-  <div class="row">
-    <div class="col-md-12 text-center"><a href="#" editable-text="room.topic" onaftersave="setRoomTopic()">{{ room.topic || 'Set A Topic For This Room Now!' }}</a></div>
-  </div>
+<div class="topic">
+  <a href="#" editable-text="room.topic" onaftersave="setRoomTopic()">{{ room.topic || 'Pick a topic for this room' }}</a>
+</div>
+
+<div id="messages">
   <div ng-repeat="message in messages">
-    <div class="row" ng-class="{own: message.data.msg.sender.username == user.username}">
-      <div ng-switch="message.o">
-        <div ng-switch-when="msg">
-          <div class="col-md-2" style="color: {{ message.data.msg.sender.info.color }}" title="{{ message.data.msg.sender.username}}">
-            <strong>{{ message.data.msg.sender.info.name }}</strong>
-          </div>
-          <div class="col-md-8">{{ message.data.msg.txt }}</div>
-          <div class="col-md-2"><span am-time-ago="message.data.msg.time"></span></div>
-        </div>
-
-        <div ng-switch-when="joined">
-          <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just JOINED The Room.</div>
-          <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
-        </div>
-
-        <div ng-switch-when="left">
-          <div class="col-md-offset-2 col-md-8"><span style="color: {{message.data.user.color}}">{{ message.data.user.username }}</span> Just LEFT The Room.</div>
-          <div class="col-md-2"><span am-time-ago="message.data.when"></span></div>
-        </div>
-        <div ng-switch-when="set-user-info">
-          <div class="col-md-offset-2 col-md-8"><em>{{ message.data.originalUsername }}</em> is now identified as <div class="user-color" style="background-color: {{message.data.newUserInfo.info.color}}" ng-if="message.data.newUserInfo.info.color"></div> <strong>{{ message.data.newUserInfo.info.name }}</strong>.</div>
-          <div class="col-md-2"><span am-time-ago="message.data.when"></div>
-        </div>
-        <div ng-switch-when="set-room-topic">
-          <div class="col-md-offset-2 col-md-8"><em>{{message.data.sender.info.name}}</em> changed the room topic to  <em>{{ message.data.topic }}</em>.</div>
-          <div class="col-md-2"><span am-time-ago="message.data.when"></div>
-        </div>
+    <div ng-switch="message.o">
+      <div ng-switch-when="msg">
+        <div ng-include="src='views/txt-message.html'"></div>
+      </div>
+      <div ng-switch-when="joined">
+        <div ng-include="src='views/joined-message.html'"></div>
+      </div>
+      <div ng-switch-when="left">
+        <div ng-include="src='views/leftroom-message.html'"></div>
+      </div>
+      <div ng-switch-when="set-user-info">
+        <div ng-include="src='views/userinfo-changed-message.html'"></div>
+      </div>
+      <div ng-switch-when="set-room-topic">
+        <div ng-include="src='views/roomtopicchange-message.html'"></div>
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-offset-2 col-md-10" ng-hide="! isSomeoneTyping()" >someone is typing...</div>
-  </div>
 </div>
+
+<!-- New Message Box -->
+<form name="msgForm" id="new-message" ng-submit="sendMessage()">
+  <input for="message" type="text"  placeholder="Say something..." ng-model="$parent.form.msg" autofocus required>
+  <button type="submit" ng-disabled="! isOnline() || ! $parent.form.msg"><i class="fa fa-chevron-right"></i></button>
+</form>
