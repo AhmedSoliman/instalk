@@ -5,7 +5,7 @@
         <i class="fa fa-user"></i>
       </div>
     </a>
-    <span><a href="#" editable-text="user.info.name" onaftersave="updateUserInfo()" title="{{ user.username}}">{{user.info.name}}</a> (me) — <a href="#">verify</a></span>
+    <span><a class="myself" href="#" editable-text="user.info.name" buttons="no" onaftersave="updateUserInfo()" title="{{ user.username}}">{{user.info.name}}</a> (me)  <!-- — <a href="#" ng->verify</a> --></span>
   </li>
   <div ng-repeat="member in members">
     <li title="{{member.username}}"><div class="avatar" style="background-color: {{member.info.color}}"><i class="fa fa-user"></i></div><span>{{ member.info.name }}</span></li>
@@ -13,4 +13,12 @@
   </div>
 </ul>
 
-<img id="logo" src="images/instalk-logo.png" height="50" alt="Instalk Logo">
+<div id="logo">
+  <div class="about">
+    Open a chat room on the fly and share the link with your friends, invite others by giving them this unique link.
+  </div>
+  <a href="http://instalk.im">
+    <img src="images/instalk-logo.png" height="50" alt="Instalk Logo">
+  </a>
+</div>
+

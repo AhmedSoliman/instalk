@@ -103,8 +103,6 @@ Instalk.myApp
     scheduleStopTyping = () ->
       $scope.chatEvents.timer = $timeout(stopTyping, 1000)
 
-    $scope.away = () -> alert 'We are away!' #TODO
-
     $scope.isSomeoneTyping = () -> $scope.chatEvents.whoIsTyping.length > 0
 
     $scope.whoIsTyping = () ->
@@ -115,20 +113,22 @@ Instalk.myApp
 
     $scope.beginTyping = (ev) ->
       keycode = ev.which
-      if (keycode >= 0) and (keycode > 19) and (keycode isnt 224) and (keycode isnt 91) and (keycode not in [37, 38, 39, 40])
+      if (keycode >= 0) and (keycode > 19) and (keycode isnt 224) and (keycode isnt 91) and (keycode not in [13, 37, 38, 39, 40])
         if $scope.chatEvents.areWeTyping is true and $scope.chatEvents.timer
           $timeout.cancel($scope.chatEvents.timer)
           scheduleStopTyping()
         else
-          $log.debug("We started typing...")
+          $log.debug("We started typing...:", ev)
           InstalkProtocol.beginTyping $scope.roomId
           $scope.chatEvents.areWeTyping = true
           scheduleStopTyping()
 
     stopTyping = () ->
       $log.debug("We stopped Typing")
-      $scope.chatEvents.areWeTyping = false
       InstalkProtocol.stopTyping $scope.roomId
+      $timeout( () ->
+        $scope.chatEvents.areWeTyping = false
+      , 200)
 
     $scope.isConnecting = () ->
       (InstalkProtocol.currentState() is 'OPEN' or InstalkProtocol.currentState() is 'CONNECTING') and not $scope.isOnline()
@@ -161,6 +161,10 @@ Instalk.myApp
       InstalkProtocol.setRoomTopic $scope.roomId, $scope.room.topic
 
     $scope.sendMessage = () ->
+      if $scope.chatEvents.timer and $scope.chatEvents.areWeTyping
+        $log.debug("Canceling the timer and stopping immediately")
+        $timeout.cancel($scope.chatEvents.timer)
+        stopTyping()
       $log.debug 'Sending: ', $scope.form.msg
       InstalkProtocol.sendMessage $scope.roomId, $scope.form.msg
       $scope.form.msg = ''

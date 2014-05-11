@@ -1,9 +1,9 @@
 <div class="topic">
-  <a href="#" editable-text="room.topic" onaftersave="setRoomTopic()">{{ room.topic || 'Pick a topic for this room' }}</a>
+  <a href="#" editable-text="room.topic" buttons="no" onaftersave="setRoomTopic()">{{ room.topic || 'Pick a topic for this room' }}</a>
 </div>
 
 <div id="messages">
-  <div ng-repeat="message in messages track by $index">
+  <div ng-repeat="message in messages" class="message-row">
     <div ng-switch="message.o">
       <div ng-switch-when="msg">
         <div ng-include="src='views/txt-message.html'"></div>
@@ -25,9 +25,10 @@
 </div>
 
 <div id="typing-now" ng-show="isSomeoneTyping()">
-      <span>{{whoIsTyping()}}</span>
-    <span> typing...
+      <div class="loading6"></div>
+      <span ng-show="isSomeoneTyping()">{{whoIsTyping()}} typing...</span>
   </div>
+  <!-- {{whoIsTyping()}} -->
 <!-- New Message Box -->
 <form name="msgForm" id="new-message" ng-submit="sendMessage()">
   <input for="message" type="text"  placeholder="Say something..." ng-model="$parent.form.msg" ng-keyup="beginTyping($event)" autofocus required>

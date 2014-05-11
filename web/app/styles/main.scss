@@ -7,6 +7,7 @@ $avatar-size: 30px;
 $foreground-color: #222;
 $topic-height: 50px;
 $light-color: #fefefe;
+$blue: #5192f2;
 $gray-color: #f4f4f4;
 $serif-font-family: 'Droid Serif', 'Georgia', serif;
 $sans-font-family: 'Droid Sans', sans-serif;
@@ -31,6 +32,7 @@ body {
   color: $foreground-color;
 }
 a {
+  @include transition(color 0.3s linear);
   text-decoration: none;
   border-bottom: dashed 1px #222;
   color: $foreground-color;
@@ -48,12 +50,14 @@ a {
 }
 
 .topic {
-  background: rgba(228, 228, 228, 1);
+  background: #f4f4f4;
   height: $topic-height;
+  border-bottom: solid 1px rgba(228, 228, 228, 1);
   vertical-align: middle;
   text-align: center;
   line-height: $topic-height;
   font-size: 1.4em;
+
 }
 
 .top-floaty {
@@ -63,8 +67,11 @@ a {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.5);
+
+  background: rgba(0, 0, 0, 0.5) url('../images/instalk-logo-lrg.png') no-repeat fixed center;
+  background-size: 400px auto;
   display: block;
+  opacity: 1;
   z-index: 9999;
   #notifications div {
     margin: 0 auto;
@@ -77,6 +84,20 @@ a {
   a {
     color: white;
     border-color: white;
+  }
+  &.ng-hide-add, &.ng-hide-remove {
+    @include transition(linear 0.8s all);
+    display:block!important;
+  }
+
+  &.ng-hide-add.ng-hide-add-active,
+  &.ng-hide-remove {
+    opacity:0;
+  }
+
+  &.ng-hide-add,
+  &.ng-hide-remove.ng-hide-remove-active {
+    opacity:1;
   }
 }
 
@@ -134,9 +155,6 @@ a {
 #new-message {
   position: absolute;
   bottom: 0;
-  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-  box-sizing: border-box;         /* Opera/IE 8+ */
   padding: 15px 25px;
   width: 100%;
   border-top: solid 1px rgba(228, 228, 228, 1);
@@ -145,11 +163,11 @@ a {
   z-index: 90;
   input[type="text"] {
     width: 90%;
-    height: 40px;
+    height: 90%;
     border: none;
     font-size: 1.2em;
     float: left;
-    padding: 0;
+    padding: 0 15px;
     outline: none;
     background: none;
     &:focus, &:hover {
@@ -170,11 +188,11 @@ a {
     padding: 0;
     font-size: 2em;
     background: none;
-    color: #5192f2;
+    color: $blue;
     &:hover {
       color: #559aff;
     }
-        &:disabled {
+    &:disabled {
       color: silver;
     }
 
@@ -184,20 +202,57 @@ a {
 #member-list {
   font-family: $sans-font-family;
   list-style: none;
-  padding: 0;
-  margin: 0;
-  a.editable-click {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 15px;
+  margin: 0 auto;
+  bottom: 215px;
+  overflow: auto;
+  .editable-click {
     color: white;
     border: none;
     text-decoration: none;
+    &.myself {
+      border-bottom: 1px dashed white;
+    }
   }
+
+  input[type="color"].editable-input {
+    text-align: center;
+    color: $foreground-color;
+    width: 40px;
+    height: 30px;
+  }
+
+  .editable-input {
+    text-align: center;
+    color: $foreground-color;
+    width: 100%;
+  }
+  .editable-wrap {
+    width: 80%;
+    padding-bottom: 15px;
+  }
+  .editable-buttons > button {
+    height: 30px;
+    border: none;
+    background: darkbrown;
+  }
+  .editable-buttons > button[type="submit"] {
+    background: green;
+  }
+
   li {
     cursor: default;
-    padding-bottom: 5px;
+    @include transition(background 0.3s linear);
+    padding: 5px;
     span {
       margin-left: 10px;
       a {
         color: white;
+
       }
     }
     &:hover {
@@ -216,11 +271,29 @@ a {
 }
 
 #logo {
+  font-family: $sans-font-family;
+  line-height: 1.1em;
   position: absolute;
-  bottom: 10px;
-  margin: 0 auto;
-  right: 15px;
-
+  bottom: 15px;
+  padding: 15px;
+  width: 100%;
+  height: 200px;
+  right: 0px;
+  overflow: hidden;
+  border-top: 1px solid #3d3d3d;
+  img {
+    display: block;
+    margin: 0 auto;
+  }
+  .about {
+    display: block;
+    width: 90%;
+    text-align: center;
+    font-size: 0.8em;
+    margin: 15px auto;
+    padding: 15px;
+    color: $gray-color;
+  }
 }
 // Grid System
 .grid {
@@ -255,6 +328,31 @@ a {
   width: 24.33%;
 }
 
+.message-row {
+  @include transition(0.3s linear all);
+}
+
+
+.message-row.ng-enter,
+.message-row.ng-move {
+  opacity: 0;
+  color: $blue;
+  overflow: hidden;
+}
+
+.message-row.ng-move.ng-move-active,
+.message-row.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
+.message-row.ng-leave {
+  opacity: 1;
+  overflow: hidden;
+}
+
+.message-row.ng-leave.ng-leave-active {
+  opacity: 0;
+}
 /* Opt-in outside padding */
 .grid-pad {
   padding: $pad 0 $pad $pad;
@@ -290,6 +388,14 @@ a {
 
 a.editable-click {
   color: $foreground-color;
+  border-color: $foreground-color;
+}
+.editable-input {
+  text-align: center;
+  width: 100%;
+}
+.editable-wrap {
+  width: 80%;
 }
 
 #typing-now {
@@ -299,25 +405,63 @@ a.editable-click {
   bottom: $new-message-height;
   width: 100%;
   background: #fff2bd;
-  height: 30px;
+  height: 40px;
+  line-height: 30px;
+  padding: 5px 35px;
+  font-style: italic;
   overflow: hidden;
-}
-// OLD SHIT
+  color: #c19c00;
+  display: flex;
+  opacity: 1;
+  span {
+    padding-left: 15px;
+  }
+  &.ng-hide-add, &.ng-hide-remove {
+    @include transition(linear 0.2s all);
+    display:flex!important;
+  }
 
-// #member-list {
-//   list-style: none;
-// }
+  &.ng-hide-add.ng-hide-add-active,
+  &.ng-hide-remove {
+    opacity:0;
+  }
+
+  &.ng-hide-add,
+  &.ng-hide-remove.ng-hide-remove-active {
+    opacity:1;
+  }
+
+}
+.loading6{
+  width: $avatar-size;
+  height: $avatar-size;
+  background: $blue;
+  border-radius: 50%;
+  display: flex;
+
+}
+.loading6:before{
+  content:'';
+  width: 0;
+  height: 0;
+  margin:auto;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  animation:loading6-ani1 1s infinite;
+}
+@keyframes loading6-ani1{
+  70%{
+    width: $avatar-size;
+    height: $avatar-size;
+  }
+  100%{
+    width: $avatar-size;
+    height: $avatar-size;
+    border-width: 0;
+  }
+}
 
 .own {
   background-color: #fffce3;
 }
 
-// #myself {
-//   border-bottom: 1px solid #e5e5e5;
-// }
-
-// .user-color {
-//   display: inline-block;
-//   width: 15px;
-//   height: 15px;
-// }

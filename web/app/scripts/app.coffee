@@ -9,6 +9,7 @@ Instalk.myApp = angular.module('webApp', [
   'ngRoute',
   'angular-websocket',
   'angularMoment',
+  'ngAnimate'
   "xeditable"
 ])
   .config ['WebSocketProvider', (WebSocketProvider) ->
@@ -29,10 +30,3 @@ Instalk.myApp = angular.module('webApp', [
       .otherwise
         redirectTo: '/' + Instalk.Utils.mkId(6)
   ]
-  # .run ['editableOptions', (editableOptions) ->
-  #   editableOptions.theme = 'bs3'
-  # ]
-
-# app.run(function(editableOptions) {
-#   editableOptions.theme = 'bs3'; // bootstrap3 theme. Can be also 'bs2', 'default'
-# });
