@@ -101,7 +101,7 @@ Instalk.myApp
 
 
     scheduleStopTyping = () ->
-      $scope.chatEvents.timer = $timeout(stopTyping, 1000)
+      $scope.chatEvents.timer = $timeout(stopTyping, 2000)
 
     $scope.isSomeoneTyping = () -> $scope.chatEvents.whoIsTyping.length > 0
 
@@ -126,9 +126,11 @@ Instalk.myApp
     stopTyping = () ->
       $log.debug("We stopped Typing")
       InstalkProtocol.stopTyping $scope.roomId
+      if $scope.chatEvents.timer
+        $timeout.cancel($scope.chatEvents.timer)
       $timeout( () ->
         $scope.chatEvents.areWeTyping = false
-      , 200)
+      , 300)
 
     $scope.isConnecting = () ->
       (InstalkProtocol.currentState() is 'OPEN' or InstalkProtocol.currentState() is 'CONNECTING') and not $scope.isOnline()
@@ -169,8 +171,8 @@ Instalk.myApp
       InstalkProtocol.sendMessage $scope.roomId, $scope.form.msg
       $scope.form.msg = ''
 
-      $scope.$on '$destroy', () ->
-        $log.debug("Controller is dying...")
+    $scope.$on '$destroy', () ->
+      $log.debug("Controller is dying...")
 
 
     ]

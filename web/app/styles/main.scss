@@ -26,9 +26,8 @@ body {
   padding:0;
   height: 100%;
   width: 100%;
-  min-width: 1024px;
   overflow-y: hidden;
-  font: 14px/16px $sans-font-family;
+  font: 13px/15px $sans-font-family;
   color: $foreground-color;
 }
 a {
@@ -39,7 +38,7 @@ a {
 }
 #chat-window {
   position: absolute;
-  min-width: 600px;
+  min-width: 960px;
   top: 0;
   bottom: 0;
   left: 0;
@@ -130,10 +129,10 @@ a {
   right: 0;
   top:0 ;
   width: 25%;
-  min-width: 220px;
   bottom: 0;
   padding: 15px;
   overflow: hidden;
+  z-index: 99;
   a {
     color: $light-color;
     border-color: $light-color;
@@ -142,7 +141,7 @@ a {
 
 #messages {
   position: absolute;
-  bottom: $new-message-height;
+  bottom: $new-message-height + 20px;
   top: $topic-height;
   width: 100%;
   padding: 15px 25px;
@@ -376,6 +375,7 @@ a {
   .message-body {
   }
   .time {
+    font-size: 0.8em;
     text-align: right;
   }
 }
