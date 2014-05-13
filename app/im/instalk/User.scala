@@ -83,7 +83,7 @@ object User {
 
   private[this] val colorStr = "ABCDEF0123456789"
 
-  def generateUsername: String = "Anonymous-" + Random.nextInt(5000)
+  def generateUsername: String = "Guest-" + Random.nextInt(5000)
 
   def generateColor: String = "#" + (1 to 6).map(_ => colorStr.charAt(Random.nextInt(16))).mkString("")
 }

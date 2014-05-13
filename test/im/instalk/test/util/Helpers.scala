@@ -38,7 +38,7 @@ trait Helpers {
         val user = (msg \ "user").as[User]
 //        user.color should startWith("#")
 //        user.color should have size (7)
-        user.username should startWith("Anonymous-")
+        user.username should startWith("Guest-")
         user
     }
   }
