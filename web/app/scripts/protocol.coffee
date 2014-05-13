@@ -36,7 +36,7 @@ Instalk.myApp
       _initialised = true
       $log.debug 'I am:', user
       WebSocket.onmessage onAfterWelcomeMessage
-      callback user for callback in _callbacks['welcome']
+      if _callbacks['welcome'] then callback user for callback in _callbacks['welcome']
       _lastMessage = new Date().getTime()
       setHeartbeatTimer()
 
@@ -76,6 +76,7 @@ Instalk.myApp
     onClose = () ->
       $log.info 'WebSocket Closed...'
       _initialised = false
+      if _callbacks['closed'] then callback() for callback in _callbacks['closed']
       if _timeout then $timeout.cancel(_timeout)
 
     WebSocket.onclose onClose
@@ -85,6 +86,7 @@ Instalk.myApp
     onError = (e) ->
       $log.error 'Error: Lost Connection to WebSocket:', e
       _initialised = false
+      # if _callbacks['closed'] then callback() for callback in _callbacks['closed']
       if _timeout then $timeout.cancel(_timeout)
 
     WebSocket.onerror onError
@@ -94,7 +96,10 @@ Instalk.myApp
 
 
     # Return
-    reconnect: (resetHandlers) ->  reconnect(resetHandlers)
+    reconnect: (resetHandlers) ->
+      reconnect(resetHandlers)
+
+
     currentState: () -> WebSocket.states[WebSocket.readyState()]
     isOnline: () -> @currentState() == 'OPEN' and _initialised
     isInitialised: () -> _initialised
@@ -158,6 +163,9 @@ Instalk.myApp
 
     onStopTyping: (callback) ->
       registerEvent 'stopTyping', callback
+
+    onConnectionDrop: (callback) ->
+      registerEvent 'closed', callback
 
     ]
 

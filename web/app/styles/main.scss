@@ -72,6 +72,9 @@ a {
   display: block;
   opacity: 1;
   z-index: 9999;
+  #notifications {
+    font-family: $sans-font-family;
+  }
   #notifications div {
     margin: 0 auto;
     padding: 10px;

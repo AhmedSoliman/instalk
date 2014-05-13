@@ -5,7 +5,7 @@
     </div>
 
     <div ng-show="isDisconnected()" class="warning">
-      Connection Lost, <a href="" ng-click="reconnect()">Reconnect?</a>
+      Connection Lost, retrying after {{ retryAfter }} seconds, <a href="" ng-click="reconnect()">Reconnect Now?</a>
     </div>
   </div>
 </div>

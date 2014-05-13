@@ -14,6 +14,8 @@ Instalk.myApp
       InstalkProtocol.reconnect true
 
     _inRoom = false
+    _retrier = null
+    _retryBase = 1
     $scope.roomId = $routeParams.roomId
     $scope.room =
       topic: ""
@@ -24,6 +26,7 @@ Instalk.myApp
     $scope.chatEvents =
       areWeTyping: false
       whoIsTyping: []
+    $scope.retryAfter = 0
 
 
     scrollToBottom = () ->
@@ -43,6 +46,8 @@ Instalk.myApp
 
 
     InstalkProtocol.onWelcome (user) ->
+      if _retrier then $timeout.cancel(_retrier)
+      _retryBase = 1
       $log.debug 'Got Welcome...'
       $scope.user = user
       $cookies.userInfo = JSON.stringify user
@@ -100,6 +105,27 @@ Instalk.myApp
       scrollToBottom()
 
 
+
+    handleConnectionDrop = () ->
+      if _retrier then $timeout.cancel(_retrier)
+      $log.debug("We lost connection")
+      _retryBase += 1
+      if _retryBase > 7
+        _retryBase = 7
+      $scope.retryAfter = Math.pow(2, _retryBase)
+      _retrier = $timeout(retryDecay, 1000)
+
+    InstalkProtocol.onConnectionDrop handleConnectionDrop
+
+    retryDecay = () ->
+      if _retrier then $timeout.cancel(_retrier)
+      $scope.retryAfter -= 1
+      if $scope.retryAfter <= 0
+        #it's time to retry
+        $scope.reconnect()
+      else
+        _retrier = $timeout(retryDecay, 1000)
+
     scheduleStopTyping = () ->
       $scope.chatEvents.timer = $timeout(stopTyping, 2000)
 
@@ -142,7 +168,9 @@ Instalk.myApp
 
     $scope.isOnline = () -> InstalkProtocol.isOnline() and _inRoom is true
 
-    $scope.reconnect = () -> InstalkProtocol.reconnect()
+    $scope.reconnect = () ->
+      if _retrier then $timeout.cancel(_retrier)
+      InstalkProtocol.reconnect()
 
     $scope.currentState = () -> InstalkProtocol.currentState()
 
@@ -174,5 +202,9 @@ Instalk.myApp
     $scope.$on '$destroy', () ->
       $log.debug("Controller is dying...")
 
+    if $scope.isDisconnected()
+      _retryBase = 1
+      if _retrier then $timeout.cancel(_retrier)
+      handleConnectionDrop()
 
     ]
