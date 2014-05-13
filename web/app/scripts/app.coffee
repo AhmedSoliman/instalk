@@ -22,15 +22,16 @@ Instalk.myApp = angular.module('webApp', [
     .prefix('')
     .uri(uri)
   ]
-  .config ['$routeProvider', ($routeProvider) ->
+  .config ['$routeProvider', '$locationProvider', ($routeProvider, $locationProvider) ->
     $routeProvider
       .when '/:roomId',
         templateUrl: 'views/main.html'
         controller: 'MainCtrl'
       .otherwise
         redirectTo: '/' + Instalk.Utils.mkId(6)
+
+    $locationProvider.html5Mode(true)
   ]
   .config ['$logProvider', ($logProvider) ->
     $logProvider.debugEnabled(false)
-
   ]
