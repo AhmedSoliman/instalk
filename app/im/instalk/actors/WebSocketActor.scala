@@ -77,7 +77,7 @@ class WebSocketActor(user: User, clientProps: (User, ActorRef) => Props, remoteA
             terminationGun.cancel()
             //let's send him a welcome message and become initialized
             send(Responses.welcome(user))
-            context.setReceiveTimeout(15.seconds) //enable heart-beat
+            context.setReceiveTimeout(20.seconds) //enable heart-beat
             context.become(initialized)
           }
         case e: JsError =>
