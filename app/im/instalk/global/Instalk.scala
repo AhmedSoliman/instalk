@@ -18,9 +18,9 @@ package im.instalk.global
 import play.api._
 import akka.actor._
 import java.util.concurrent.atomic.AtomicReference
-import im.instalk.actors.{ ClientManager, RoomManager }
+import im.instalk.actors.{ClientManager, RoomManager}
 import com.codahale.metrics.{JmxReporter, MetricRegistry}
-import im.instalk.store.{CassandraPersistence, Persistence}
+import im.instalk.store.{NullPersistance, CassandraPersistence, Persistence}
 
 object Instalk extends GlobalSettings {
 
@@ -33,9 +33,13 @@ object Instalk extends GlobalSettings {
 
 
   def actorSystem(): ActorSystem = _actorSystem.get()
+
   def clientManager(): ActorRef = _clientManager.get()
+
   def roomManager(): ActorRef = _roomManager.get()
+
   def persistence(): Persistence = _persistence.get()
+
   def metrics(): MetricRegistry = _metrics.get()
 
   override def onStart(app: Application): Unit = {
@@ -43,9 +47,21 @@ object Instalk extends GlobalSettings {
     _jmxReporter.set(JmxReporter.forRegistry(metrics()).build())
     _jmxReporter.get.start()
     _actorSystem.set(ActorSystem("instalk", app.configuration.underlying.getConfig("instalk")))
-    _persistence.set(new CassandraPersistence(app.configuration.getConfig("instalk.cassandra").getOrElse(
-     throw app.configuration.reportError("instalk.cassandra", "Cassandra Configuration is Missing!")
-    ))(_actorSystem.get()))
+    _persistence.set {
+      val isPersistenceEnabled = app.configuration.getBoolean("instalk.persistence.enabled").getOrElse(true)
+      implicit val actSys = _actorSystem.get()
+      Logger.info(s"Starting up with Persistance: $isPersistenceEnabled")
+
+      if (isPersistenceEnabled)
+        new CassandraPersistence(app.configuration.getConfig("instalk.cassandra").getOrElse(
+          throw app.configuration.reportError("instalk.cassandra", "Cassandra Configuration is Missing!")
+        ))
+      else
+        new NullPersistance
+
+    }
+
+
     _clientManager.set(actorSystem.actorOf(Props[ClientManager], "clients"))
     _roomManager.set(actorSystem.actorOf(Props(new RoomManager(_persistence.get())), "rooms"))
 
