@@ -74,14 +74,14 @@ Instalk.myApp
 
     InstalkProtocol.onBeginTyping (data) ->
       if data.data.sender isnt $scope.user.username
-        $log.info("Someone started typing:", data.data.sender)
+        $log.debug("Someone started typing:", data.data.sender)
         if data.data.sender not in $scope.chatEvents.whoIsTyping
-          $log.info(data.data.sender + " IS typing...")
+          $log.debug(data.data.sender + " IS typing...")
           $scope.chatEvents.whoIsTyping.push data.data.sender
 
     InstalkProtocol.onStopTyping (data) ->
       if data.data.sender isnt $scope.user.username
-        $log.info("Someone stopped typing:", data.data.sender)
+        $log.debug("Someone stopped typing:", data.data.sender)
         i = $scope.chatEvents.whoIsTyping.indexOf(data.data.sender)
         $scope.chatEvents.whoIsTyping.splice(i, 1)
 
