@@ -4,24 +4,27 @@ Instalk.myApp
   .factory 'InstalkProtocol', ['$log', '$timeout', 'WebSocket', ($log, $timeout, WebSocket) ->
     _initialised = false
     _callbacks = {}
+    _timeout = null
 
     setHeartbeatTimer = () ->
       i = new Date().getTime()
       die = () ->
         $log.warn("We didn't receive the heart beat for quite sometime, dying...")
         _callbacks['heartbeat'] = []
+        _timeout = null
         WebSocket.close()
 
       _timeout = $timeout(die, 4000) # we will die after 4 seconds from now if nobody set off this timer
 
       _callbacks['heartbeat'] = [(data) ->
-        ret = new Date().getTime()
-        if data['heart-beat-ack'] is i
-          $log.info("Heartbeat, lag: #{ret - i}ms")
-          $timeout.cancel(_timeout)
-          $timeout(setHeartbeatTimer, 14000)
-        else
-          $log.warn("Got the wrong heart-beat-ack, this is potentially something crazy!")
+        if _initialised
+          ret = new Date().getTime()
+          if data['heart-beat-ack'] is i
+            $log.info("Heartbeat, lag: #{ret - i}ms")
+            $timeout.cancel(_timeout)
+            _timeout = $timeout(setHeartbeatTimer, 14000)
+          else
+            $log.warn("Got the wrong heart-beat-ack, this is potentially something crazy!")
       ]
 
       $log.debug("Sending Heartbeat:", i)
@@ -43,6 +46,7 @@ Instalk.myApp
 
     reconnect = (resetHandlers) ->
       $log.debug("RESET HANDLERS:", resetHandlers)
+      if _timeout then $timeout.cancel(_timeout)
       if resetHandlers
         $log.debug("Cleaning up WebSocket handlers...")
         _callbacks = {}
@@ -51,27 +55,39 @@ Instalk.myApp
           WebSocket.onclose () -> undefined
           WebSocket.onmessage () -> undefined
           WebSocket.close()
+          WebSocket.onopen () -> undefined
+          WebSocket.onerror () -> undefined
         catch error
           $log.warn("could not close the old websocket")
       $log.info 'Reconnecting to the WebSocket...'
       WebSocket.new()
+      WebSocket.onopen onOpen
       WebSocket.onmessage onBeforeWelcomeMessage
+      WebSocket.onerror onError
+      WebSocket.onclose onClose
 
-    WebSocket.onopen () ->
+    onOpen = () ->
       $log.info 'WebSocket Connected...'
       $log.debug 'Initialising...'
       WebSocket.send JSON.stringify Instalk.Protocol.initMessage
 
-    WebSocket.onclose () ->
+    WebSocket.onopen onOpen
+
+    onClose = () ->
       $log.info 'WebSocket Closed...'
       _initialised = false
-      _callbacks = {}
+      if _timeout then $timeout.cancel(_timeout)
+
+    WebSocket.onclose onClose
 
     WebSocket.onmessage onBeforeWelcomeMessage
 
-    WebSocket.onerror (e) ->
+    onError = (e) ->
       $log.error 'Error: Lost Connection to WebSocket:', e
       _initialised = false
+      if _timeout then $timeout.cancel(_timeout)
+
+    WebSocket.onerror onError
 
     registerEvent = (topic, callback) ->
       (_callbacks[topic] ?=[]).push callback

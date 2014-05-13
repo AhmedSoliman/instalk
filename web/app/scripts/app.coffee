@@ -31,6 +31,6 @@ Instalk.myApp = angular.module('webApp', [
         redirectTo: '/' + Instalk.Utils.mkId(6)
   ]
   .config ['$logProvider', ($logProvider) ->
-    $logProvider.debugEnabled(false)
+    $logProvider.debugEnabled(true)
 
   ]
