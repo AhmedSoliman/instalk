@@ -27,6 +27,30 @@ If you didn't initialise within the `idle-terminate-grace-period` the server wil
 In case of an error you will be receiving an error message according to the [Handling Errors]() specifications.
 The `user` object is generated unless you identify yourself, the color attribute is a stable HEX color that clients should use to represent this user, if the user is identified we will be using his gravatar picture for that.
 
+## Heart Beat
+To avoid stale connections, we have a simple heartbeat mechanism, it works like the following:
+
+- If the server (after welcome) didn't receive any message for over 15 seconds it sends you a timeout notice and closes the connection:
+
+  ```
+  {timeout: 1}
+  ```
+- If you send any valid message to the server it counts as a heart beat, however it's recommended that you send a heart-beat message every 10 seconds in this format
+  
+  ```
+  {heart-beat: 456}
+  ```
+The number in front of the heart beat is any arbitrary number that the client picks, a good advice is to put your current timestamp as a value
+
+- The server must respond on the heart-beat message with the following response
+
+  ```
+  {heart-beat-ack: 456}
+  ```
+  The response contains the same number you sent in the heart-beat request, if you have sent the timestamp earlier, you can then compare it with the timestamp when you have received the response, then you are able to calculate the server lag (latency in ms). If you failed to receive this ack in 4 seconds after your request, you can fail immediately and close the websocket and consider this connection stale.
+
+
+
 ## Joining and Leaving Rooms
 Once you connect and initialise your connection properly, you are at the lobby, there is no room that you are member of, you need to either create or join a room to start instalking. Creation and Joining to Instalk is a transparent operation, if you are joining a room that does not exist, it will be automatically be created for you.
 
@@ -278,10 +302,6 @@ Server will distribute this event to the participants' clients like this
 
 ------------------------------------------------------------------------------------------------------------------------------------
 ### Proposed Ideas [Under Development/Disabled By Default]
-
-  //HEART BEAT
-  {"heart-beat": 1} //1 can be any number
-  {"heart-beat-ack": 1} //returns the same number
 
 
   //Server then will synchronize the member list and replay the last 50 messages to you

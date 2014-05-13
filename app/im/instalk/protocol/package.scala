@@ -59,7 +59,7 @@ package object protocol {
 
   object Validators {
     val version: Reads[Version] = (__ \ 'v).read[String]
-    val heartbeat: Reads[Int] = (__ \ "heart-beat").read[Int]
+    val heartbeat: Reads[Long] = (__ \ "heart-beat").read[Long]
   }
 
   object Responses {
@@ -67,7 +67,7 @@ package object protocol {
 
     val timeout = Json.obj("timeout" -> 1)
 
-    def heartbeatAck(i: Int) = Json.obj("heart-beat-ack" -> i)
+    def heartbeatAck(i: Long) = Json.obj("heart-beat-ack" -> i)
 
     def notSupportedOp(op: String) = Json.obj("o" -> op) ++ Errors.unsupportedOp
 

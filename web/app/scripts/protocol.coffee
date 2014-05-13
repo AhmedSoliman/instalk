@@ -5,6 +5,28 @@ Instalk.myApp
     _initialised = false
     _callbacks = {}
 
+    setHeartbeatTimer = () ->
+      i = new Date().getTime()
+      die = () ->
+        $log.warn("We didn't receive the heart beat for quite sometime, dying...")
+        _callbacks['heartbeat'] = []
+        WebSocket.close()
+
+      _timeout = $timeout(die, 4000) # we will die after 4 seconds from now if nobody set off this timer
+
+      _callbacks['heartbeat'] = [(data) ->
+        ret = new Date().getTime()
+        if data['heart-beat-ack'] is i
+          $log.info("Heartbeat, lag: #{ret - i}ms")
+          $timeout.cancel(_timeout)
+          $timeout(setHeartbeatTimer, 14000)
+        else
+          $log.warn("Got the wrong heart-beat-ack, this is potentially something crazy!")
+      ]
+
+      $log.debug("Sending Heartbeat:", i)
+      WebSocket.send JSON.stringify Instalk.Protocol.heartbeat(i)
+
     onBeforeWelcomeMessage = (ev) ->
       data = JSON.parse ev.data
       user = Instalk.Protocol.getUser data
@@ -12,6 +34,8 @@ Instalk.myApp
       $log.debug 'I am:', user
       WebSocket.onmessage onAfterWelcomeMessage
       callback user for callback in _callbacks['welcome']
+      _lastMessage = new Date().getTime()
+      setHeartbeatTimer()
 
     onAfterWelcomeMessage = (ev) ->
       data = JSON.parse ev.data
@@ -28,7 +52,7 @@ Instalk.myApp
           WebSocket.onmessage () -> undefined
           WebSocket.close()
         catch error
-          $log.warning("could not close the old websocket")
+          $log.warn("could not close the old websocket")
       $log.info 'Reconnecting to the WebSocket...'
       WebSocket.new()
       WebSocket.onmessage onBeforeWelcomeMessage
