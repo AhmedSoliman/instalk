@@ -21,6 +21,13 @@ import org.joda.time.DateTime
 
 package object protocol {
 
+  trait Request
+  trait RoomRequest extends Request {
+    def r: RoomId
+  }
+  trait Response
+  trait InFlightRequest
+
   import DefaultFormats._
 
   val VERSION = "0.1"

@@ -8,7 +8,7 @@ unless Array::filter
     element for element in this when callback(element)
 
 Instalk.myApp
-  .controller 'MainCtrl', ['$scope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
+  .controller 'MainCtrl', ['$scope', '$rootScope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $rootScope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
     $log.debug("Starting up controller...")
     if InstalkProtocol.isInitialised()
       InstalkProtocol.reconnect true
@@ -158,6 +158,7 @@ Instalk.myApp
         $scope.chatEvents.areWeTyping = false
       , 300)
 
+    $scope.getLag = () -> InstalkProtocol.getLag()
     $scope.isConnecting = () ->
       (InstalkProtocol.currentState() is 'OPEN' or InstalkProtocol.currentState() is 'CONNECTING') and not $scope.isOnline()
 
@@ -207,4 +208,20 @@ Instalk.myApp
       if _retrier then $timeout.cancel(_retrier)
       handleConnectionDrop()
 
+    Instalk.Utils.onVisibilityChange () ->
+      $log.info("hidden")
+    , () ->
+      $log.info("shown")
+    # _title = 1
+    # _animator = null
+    # updateTitle = () ->
+    #   $rootScope.title = $routeParams.roomId + " " + _title
+    #   _title += 1
+    #   _animator = $timeout updateTitle, 1000
+
+    # window.onblur = () ->
+    #   _animator = $timeout updateTitle , 1000
+
+    # window.onfocus = () ->
+    #   $timeout.cancel(_animator )
     ]

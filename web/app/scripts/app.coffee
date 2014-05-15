@@ -33,5 +33,15 @@ Instalk.myApp = angular.module('webApp', [
     $locationProvider.html5Mode(true)
   ]
   .config ['$logProvider', ($logProvider) ->
-    $logProvider.debugEnabled(false)
+    $logProvider.debugEnabled(true)
+  ]
+  .run ['$rootScope', '$log', ($rootScope, $log) ->
+    $rootScope.$on '$routeChangeSuccess', (event, currentRoute, previousRoute) ->
+      #Change page title, based on Route information
+      if currentRoute.title
+        $rootScope.title = currentRoute.title
+      else if currentRoute.pathParams['roomId']
+        $rootScope.title = currentRoute.pathParams['roomId']
+      else
+        $rootScope.title = "Let's Talk!"
   ]

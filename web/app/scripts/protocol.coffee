@@ -5,6 +5,7 @@ Instalk.myApp
     _initialised = false
     _callbacks = {}
     _timeout = null
+    _lag = 0
 
     setHeartbeatTimer = () ->
       i = new Date().getTime()
@@ -21,6 +22,7 @@ Instalk.myApp
           ret = new Date().getTime()
           if data['heart-beat-ack'] is i
             $log.info("Heartbeat, lag: #{ret - i}ms")
+            _lag = ret - i
             $timeout.cancel(_timeout)
             _timeout = $timeout(setHeartbeatTimer, 14000)
           else
@@ -103,6 +105,7 @@ Instalk.myApp
     currentState: () -> WebSocket.states[WebSocket.readyState()]
     isOnline: () -> @currentState() == 'OPEN' and _initialised
     isInitialised: () -> _initialised
+    getLag: () -> _lag
 
     joinRoom: (roomId) ->
       if _initialised
