@@ -33,6 +33,7 @@
 <!-- {{whoIsTyping()}} -->
 <!-- New Message Box -->
 <form name="msgForm" id="new-message" ng-submit="sendMessage()">
+<!--   <div placeholder="Say Something..." contenteditable ng-keydown="beginTyping($event)"></div> -->
   <input for="message" type="text"  placeholder="Say something..." ng-model="$parent.form.msg" ng-keydown="beginTyping($event)" autofocus required>
   <button type="submit" ng-disabled="! isOnline() || ! $parent.form.msg"><i class="fa fa-chevron-right"></i></button>
 </form>
