@@ -9,7 +9,7 @@ Instalk.myApp = angular.module('webApp', [
   'ngRoute',
   'angular-websocket',
   'angularMoment',
-  'ngAnimate'
+  'ngAnimate',
   "xeditable"
 ])
   .config ['WebSocketProvider', (WebSocketProvider) ->
@@ -39,9 +39,9 @@ Instalk.myApp = angular.module('webApp', [
     $rootScope.$on '$routeChangeSuccess', (event, currentRoute, previousRoute) ->
       #Change page title, based on Route information
       if currentRoute.title
-        $rootScope.title = currentRoute.title
+        $rootScope.title = 'Instalk | #' + currentRoute.title
       else if currentRoute.pathParams['roomId']
-        $rootScope.title = currentRoute.pathParams['roomId']
+        $rootScope.title = 'Instalk | #' + currentRoute.pathParams['roomId']
       else
-        $rootScope.title = "Let's Talk!"
+        $rootScope.title = "Instalk | Let's Talk!"
   ]

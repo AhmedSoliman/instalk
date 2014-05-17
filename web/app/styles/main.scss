@@ -212,13 +212,16 @@ a {
   margin: 0 auto;
   bottom: 215px;
   overflow: auto;
+  li.myself {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 700;
+  }
+
   .editable-click {
     color: white;
     border: none;
     text-decoration: none;
-    &.myself {
-      border-bottom: 1px dashed white;
-    }
   }
 
   input[type="color"].editable-input {
@@ -270,6 +273,26 @@ a {
   text-align: center;
   line-height: $avatar-size;
   display: inline-block;
+}
+
+#lag {
+  text-align: center;
+  font-size: 0.6em;
+  &.normal {
+    color: #3D3D3D;
+  }
+  &.warn {
+    color: #FF7E31;
+  }
+  &.bad {
+    color: #FF0000;
+  }
+}
+
+#marker {
+  clear: both;
+  height: 3px;
+  background-color: #CA93D0;
 }
 
 #logo {
@@ -385,8 +408,17 @@ a {
 
 .event {
   background: $gray-color;
-  font-size: 1.0em;
+  font-family: $sans-font-family;
+  font-size: 0.8em;
   font-style: italic;
+  line-height: 15px;
+padding: 5px 10px;
+  .avatar {
+    width: 15px;
+    height: 15px;
+    line-height: 15px;
+
+  }
 }
 
 a.editable-click {
@@ -401,6 +433,7 @@ a.editable-click {
   width: 80%;
 }
 
+
 #typing-now {
   position: absolute;
   z-index: 80;
@@ -408,9 +441,11 @@ a.editable-click {
   bottom: $new-message-height;
   width: 100%;
   background: #fff2bd;
-  height: 40px;
-  line-height: 30px;
-  padding: 5px 35px;
+  height: 25px;
+  font-size: 0.8em;
+  font-family: $sans-font-family;
+  line-height: 15px;
+  padding: 5px 42px;
   font-style: italic;
   overflow: hidden;
   color: #c19c00;
@@ -436,8 +471,8 @@ a.editable-click {
 
 }
 .loading6{
-  width: $avatar-size;
-  height: $avatar-size;
+  width: $avatar-size / 2;
+  height: $avatar-size / 2;
   background: $blue;
   border-radius: 50%;
   display: flex;
@@ -454,12 +489,12 @@ a.editable-click {
 }
 @keyframes loading6-ani1{
   70%{
-    width: $avatar-size;
-    height: $avatar-size;
+    width: $avatar-size / 2;
+    height: $avatar-size / 2;
   }
   100%{
-    width: $avatar-size;
-    height: $avatar-size;
+    width: $avatar-size / 2;
+    height: $avatar-size / 2;
     border-width: 0;
   }
 }

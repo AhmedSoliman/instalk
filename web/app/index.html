@@ -6,7 +6,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title ng-bind="'Instalk | #' + $root.title">Instalk | Let's Talk! | Welcome</title>
+  <title ng-bind-template="{{ title }}">Instalk | Let's Talk!</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -71,6 +71,8 @@
       <script src="scripts/app.js"></script>
       <script src="scripts/protocol-helpers.js"></script>
       <script src="scripts/protocol.js"></script>
+      <script src="scripts/visibility.js"></script>
+      <script src="scripts/scrollevents.js"></script>
       <script src="scripts/controllers/main.js"></script>
       <!-- endbuild -->
     </body>

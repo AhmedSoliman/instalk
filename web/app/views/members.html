@@ -1,11 +1,11 @@
  <ul id="member-list">
-  <li ng-show="user">
+  <li ng-show="user" class="myself">
     <a href="#" editable-color="user.info.color" onaftersave="updateUserInfo()">
       <div class="avatar" style="background-color: {{user.info.color}}">
         <i class="fa fa-user"></i>
       </div>
     </a>
-    <span><a class="myself" href="#" editable-text="user.info.name" buttons="no" onaftersave="updateUserInfo()" title="{{ user.username}}">{{user.info.name}}</a> (me)  <!-- — <a href="#" ng->verify</a> --></span>
+    <span><a class="myself" href="#" editable-text="user.info.name" buttons="no" onaftersave="updateUserInfo()" title="{{ user.username}}">{{user.info.name}}</a> <!-- — <a href="#" ng->verify</a> --></span>
   </li>
   <div ng-repeat="member in members">
     <li title="{{member.username}}"><div class="avatar" style="background-color: {{member.info.color}}"><i class="fa fa-user"></i></div><span>{{ member.info.name }}</span></li>
@@ -20,6 +20,6 @@
   <a href="http://instalk.im">
     <img src="images/instalk-logo.png" height="50" alt="Instalk Logo">
   </a>
-  <div ng-bind="'lag: ' + getLag() + 'ms'"></div>
+  <div id="lag" ng-bind="'lag is ' + getLag() + 'ms'" ng-class="{normal: getLag() < 300, warn: getLag() >= 300 && getLag() < 700, bad: getLag() > 700}"></div>
 </div>
 

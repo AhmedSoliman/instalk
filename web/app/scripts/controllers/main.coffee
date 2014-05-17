@@ -8,14 +8,32 @@ unless Array::filter
     element for element in this when callback(element)
 
 Instalk.myApp
-  .controller 'MainCtrl', ['$scope', '$rootScope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, $rootScope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
+  .controller 'MainCtrl', ['$scope', 'visibilityApiService', '$rootScope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, visibilityApiService, $rootScope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
     $log.debug("Starting up controller...")
     if InstalkProtocol.isInitialised()
       InstalkProtocol.reconnect true
 
     _inRoom = false
     _retrier = null
+    _hidden = false
+    _autoScrollEnabled = true
+    _autoScrollSuspended = false
+    $scope.scrolledToBottom = ($event, isEnded) ->
+      if not _autoScrollSuspended
+        if isEnded
+          _autoScrollEnabled = true
+          stopMarkingMessages()
+        else
+          startMarkingMessages()
+          _autoScrollEnabled = false
+
     _retryBase = 1
+    _unread = 0
+    _resetTitle = $rootScope.title
+    _titleAnimation = false
+    marker =
+      o: 'marker'
+    _markerLoc = -1
     $scope.roomId = $routeParams.roomId
     $scope.room =
       topic: ""
@@ -28,11 +46,31 @@ Instalk.myApp
       whoIsTyping: []
     $scope.retryAfter = 0
 
-
     scrollToBottom = () ->
-      $('#messages').animate({
+      if _autoScrollEnabled
+        _autoScrollSuspended = true
+        $('#messages').animate({
                         scrollTop: $('#messages').last()[0].scrollHeight
-                    }, 500)
+                    }, 150, () ->
+                      $log.info "Animation Completed"
+                     _autoScrollSuspended = false
+                     )
+
+    enableAnimateTitle = (resetTitle) ->
+      _resetTitle = resetTitle
+      if not _titleAnimation
+        _titleAnimation = true
+        $rootScope.title = _resetTitle
+        animator = () ->
+          if _titleAnimation
+            $rootScope.title = $rootScope.title.substring(3)
+            if $rootScope.title.length is 0
+              $rootScope.title = _resetTitle
+            $timeout(animator, 1000)
+        $timeout(animator, 1000)
+
+    disableAnimateTitle = () ->
+       _titleAnimation = false
 
     InstalkProtocol.onRoomWelcome (data) ->
       #actual init...
@@ -40,10 +78,31 @@ Instalk.myApp
       _inRoom = true
       $log.debug "SYNC:", data.data
       $scope.members = data.data.members.toDict 'username'
+      #debugger
       $scope.messages = data.data.messages
       $scope.room.topic = data.data.topic
       $timeout(scrollToBottom, 500)
 
+    isMarked = () -> _markerLoc > -1
+
+    addMarker = () ->
+      if not isMarked()
+        $log.info "Adding Marker"
+        _markerLoc = ($scope.messages.push marker) - 1
+
+    removeMarkers = () ->
+      if isMarked()
+        $log.info "Removing Marker", _markerLoc
+        $log.info "Messages before:", $scope.messages
+        $log.info("Removing:", $scope.messages.splice(_markerLoc, 1))
+        $log.info "Messages now:", $scope.messages
+        _markerLoc = -1
+
+    setTitle = (title) ->
+      $rootScope.title = 'Instalk | #' + $scope.roomId + ' ' + title
+
+    formatTitle = (title) ->
+      'Instalk | #' + $scope.roomId + ' ' + title
 
     InstalkProtocol.onWelcome (user) ->
       if _retrier then $timeout.cancel(_retrier)
@@ -69,6 +128,10 @@ Instalk.myApp
 
     InstalkProtocol.onMessage (data) ->
       $log.debug 'Adding Message To History:', data
+      if _hidden
+        _unread += 1
+        addMarker()
+        enableAnimateTitle(formatTitle("(#{_unread})"))
       $scope.messages.push data
       scrollToBottom()
 
@@ -104,8 +167,6 @@ Instalk.myApp
         $scope.members[data.data.newUserInfo.username] = data.data.newUserInfo
       scrollToBottom()
 
-
-
     handleConnectionDrop = () ->
       if _retrier then $timeout.cancel(_retrier)
       $log.debug("We lost connection")
@@ -140,7 +201,7 @@ Instalk.myApp
     $scope.beginTyping = (ev) ->
       keycode = ev.which
       if (keycode >= 0) and (keycode > 19) and (keycode isnt 224) and (keycode isnt 91) and (keycode not in [13, 37, 38, 39, 40])
-        if $scope.chatEvents.areWeTyping is true and $scope.chatEvents.timer
+        if $scope.chatEvents.areWeTyping and $scope.chatEvents.timer
           $timeout.cancel($scope.chatEvents.timer)
           scheduleStopTyping()
         else
@@ -151,12 +212,13 @@ Instalk.myApp
 
     stopTyping = () ->
       $log.debug("We stopped Typing")
-      InstalkProtocol.stopTyping $scope.roomId
       if $scope.chatEvents.timer
+        $log.debug("Cancelling timer...")
         $timeout.cancel($scope.chatEvents.timer)
-      $timeout( () ->
-        $scope.chatEvents.areWeTyping = false
-      , 300)
+      else
+        $log.debug("No timer to cancel")
+      $scope.chatEvents.areWeTyping = false
+      InstalkProtocol.stopTyping $scope.roomId
 
     $scope.getLag = () -> InstalkProtocol.getLag()
     $scope.isConnecting = () ->
@@ -192,11 +254,9 @@ Instalk.myApp
       InstalkProtocol.setRoomTopic $scope.roomId, $scope.room.topic
 
     $scope.sendMessage = () ->
-      if $scope.chatEvents.timer and $scope.chatEvents.areWeTyping
-        $log.debug("Canceling the timer and stopping immediately")
-        $timeout.cancel($scope.chatEvents.timer)
-        stopTyping()
+      stopTyping()
       $log.debug 'Sending: ', $scope.form.msg
+      _autoScrollEnabled = true
       InstalkProtocol.sendMessage $scope.roomId, $scope.form.msg
       $scope.form.msg = ''
 
@@ -208,20 +268,24 @@ Instalk.myApp
       if _retrier then $timeout.cancel(_retrier)
       handleConnectionDrop()
 
-    Instalk.Utils.onVisibilityChange () ->
-      $log.info("hidden")
-    , () ->
-      $log.info("shown")
-    # _title = 1
-    # _animator = null
-    # updateTitle = () ->
-    #   $rootScope.title = $routeParams.roomId + " " + _title
-    #   _title += 1
-    #   _animator = $timeout updateTitle, 1000
+    startMarkingMessages = () ->
+      _hidden = true
+      _autoScrollEnabled = false
 
-    # window.onblur = () ->
-    #   _animator = $timeout updateTitle , 1000
+    stopMarkingMessages = () ->
+      _hidden = false
+      _unread = 0
+      setTitle('')
+      disableAnimateTitle()
 
-    # window.onfocus = () ->
-    #   $timeout.cancel(_animator )
+    $scope.$on 'visibilityChanged', (event, isHidden) ->
+      $log.info("Visibility Changed", event, isHidden)
+      if isHidden
+        removeMarkers()
+        startMarkingMessages()
+      else
+        stopMarkingMessages()
+      $scope.$apply()
+      $rootScope.$apply()
+
     ]
