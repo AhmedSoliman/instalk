@@ -8,7 +8,7 @@ unless Array::filter
     element for element in this when callback(element)
 
 Instalk.myApp
-  .controller 'MainCtrl', ['$scope', 'visibilityApiService', '$rootScope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, visibilityApiService, $rootScope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
+  .controller 'MainCtrl', ['$scope', 'visibilityApiService', 'faviconService', '$rootScope', '$timeout', '$log', '$routeParams',  '$cookies', 'InstalkProtocol', ($scope, visibilityApiService, faviconService, $rootScope, $timeout, $log, $routeParams, $cookies, InstalkProtocol) ->
     $log.debug("Starting up controller...")
     if InstalkProtocol.isInitialised()
       InstalkProtocol.reconnect true
@@ -58,6 +58,7 @@ Instalk.myApp
 
     enableAnimateTitle = (resetTitle) ->
       _resetTitle = resetTitle
+      faviconService.badge(_unread)
       if not _titleAnimation
         _titleAnimation = true
         $rootScope.title = _resetTitle
@@ -277,6 +278,7 @@ Instalk.myApp
       _unread = 0
       setTitle('')
       disableAnimateTitle()
+      faviconService.reset()
 
     $scope.$on 'visibilityChanged', (event, isHidden) ->
       $log.info("Visibility Changed", event, isHidden)
