@@ -2,7 +2,8 @@
 
 Instalk.myApp.factory 'faviconService', [ '$log', ($log) ->
   favico = new Favico({
-    position: 'up'
+    animation : 'fade',
+    bgColor: '#00DF59'
 
   })
 
