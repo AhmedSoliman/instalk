@@ -29,8 +29,6 @@ Instalk.myApp
 
     _retryBase = 1
     _unread = 0
-    _resetTitle = $rootScope.title
-    _titleAnimation = false
     marker =
       o: 'marker'
     _markerLoc = -1
@@ -46,32 +44,35 @@ Instalk.myApp
       whoIsTyping: []
     $scope.retryAfter = 0
 
+    $scope.scrollToMarker = () ->
+      $('#messages').animate({
+                      scrollTop: $('#marker').offset().top
+                    }, 300)
+
     scrollToBottom = () ->
       if _autoScrollEnabled
         _autoScrollSuspended = true
         $('#messages').animate({
                         scrollTop: $('#messages').last()[0].scrollHeight
                     }, 150, () ->
-                      $log.info "Animation Completed"
                      _autoScrollSuspended = false
                      )
 
-    enableAnimateTitle = (resetTitle) ->
-      _resetTitle = resetTitle
-      faviconService.badge(_unread)
-      if not _titleAnimation
-        _titleAnimation = true
-        $rootScope.title = _resetTitle
-        animator = () ->
-          if _titleAnimation
-            $rootScope.title = $rootScope.title.substring(3)
-            if $rootScope.title.length is 0
-              $rootScope.title = _resetTitle
-            $timeout(animator, 1000)
-        $timeout(animator, 1000)
+    updateTitle = () ->
+      if _unread > 0
+        $rootScope.title = "(#{_unread}) Instalk ##{$scope.roomId}"
+        faviconService.badge(_unread)
+      else
+        $rootScope.title = "Instalk ##{$scope.roomId}"
+        faviconService.reset()
 
-    disableAnimateTitle = () ->
-       _titleAnimation = false
+    addEntryToLog = (counted, entry) ->
+      if _hidden and counted
+        _unread += 1
+        addMarker()
+        updateTitle()
+      $scope.messages.push entry
+      scrollToBottom()
 
     InstalkProtocol.onRoomWelcome (data) ->
       #actual init...
@@ -93,17 +94,10 @@ Instalk.myApp
 
     removeMarkers = () ->
       if isMarked()
-        $log.info "Removing Marker", _markerLoc
-        $log.info "Messages before:", $scope.messages
-        $log.info("Removing:", $scope.messages.splice(_markerLoc, 1))
-        $log.info "Messages now:", $scope.messages
-        _markerLoc = -1
-
-    setTitle = (title) ->
-      $rootScope.title = 'Instalk | #' + $scope.roomId + ' ' + title
-
-    formatTitle = (title) ->
-      'Instalk | #' + $scope.roomId + ' ' + title
+        $('#marker').fadeOut(1000, () ->
+          $scope.messages.splice(_markerLoc, 1)
+          _markerLoc = -1
+        )
 
     InstalkProtocol.onWelcome (user) ->
       if _retrier then $timeout.cancel(_retrier)
@@ -116,30 +110,20 @@ Instalk.myApp
     InstalkProtocol.onJoin (data) ->
       $log.debug "#{data.data.user.username} joined the room"
       $scope.members[data.data.user.username] = data.data.user
-      $scope.messages.push data
-      scrollToBottom()
-
+      addEntryToLog false, data
 
     InstalkProtocol.onLeft (data) ->
       delete $scope.members[data.data.user.username]
       $log.debug "User: #{data.data.user.username} Left Room"
-      $scope.messages.push data
-      scrollToBottom()
-
+      addEntryToLog false, data
 
     InstalkProtocol.onMessage (data) ->
       $log.debug 'Adding Message To History:', data
-      if _hidden
-        _unread += 1
-        addMarker()
-        enableAnimateTitle(formatTitle("(#{_unread})"))
-      $scope.messages.push data
-      scrollToBottom()
+      addEntryToLog true, data
 
     InstalkProtocol.onRoomTopicChange (data) ->
-      $scope.messages.push data
       $scope.room.topic = data.data.topic
-      scrollToBottom()
+      addEntryToLog true, data
 
     InstalkProtocol.onBeginTyping (data) ->
       if data.data.sender isnt $scope.user.username
@@ -155,7 +139,6 @@ Instalk.myApp
         $scope.chatEvents.whoIsTyping.splice(i, 1)
 
     InstalkProtocol.onUserInfoUpdate (data) ->
-      $scope.messages.push data
       #check if it's me or not first
       if $scope.user.username is data.data.originalUsername
         $log.debug 'Updating my own data to ', data.data.newUserInfo
@@ -166,7 +149,7 @@ Instalk.myApp
         $log.debug 'Updating a member data to ', data.data.newUserInfo
         delete $scope.members[data.data.originalUsername]
         $scope.members[data.data.newUserInfo.username] = data.data.newUserInfo
-      scrollToBottom()
+      addEntryToLog false, data
 
     handleConnectionDrop = () ->
       if _retrier then $timeout.cancel(_retrier)
@@ -198,6 +181,15 @@ Instalk.myApp
         $scope.members[w]?.info.name
       names.join(', ')
 
+    $scope.submitOnReturn = (ev) ->
+      keycode = ev.which
+      if keycode is 13 and not (ev.metaKey or ev.ctrlKey)
+        $scope.sendMessage()
+        ev.preventDefault()
+        ev.stopPropagation()
+        return false
+      else if keycode is 13 and (ev.metaKey or ev.ctrlKey)
+        $scope.form.msg += "\n"
 
     $scope.beginTyping = (ev) ->
       keycode = ev.which
@@ -276,9 +268,7 @@ Instalk.myApp
     stopMarkingMessages = () ->
       _hidden = false
       _unread = 0
-      setTitle('')
-      disableAnimateTitle()
-      faviconService.reset()
+      updateTitle()
 
     $scope.$on 'visibilityChanged', (event, isHidden) ->
       $log.info("Visibility Changed", event, isHidden)

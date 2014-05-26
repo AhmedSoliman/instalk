@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "dependencies": {
     "angular": "~1.2.0",
-    "json3": "~3.2.4",
-    "es5-shim": "~2.1.0",
+    "json3": "~3.3.1",
+    "es5-shim": "~3.4.0",
     "jquery": "~2.1.0",
     "angular-resource": "~1.2.0",
     "angular-cookies": "~1.2.0",
@@ -15,7 +15,7 @@
     "jquery-cookie": "~1.4.1",
     "angular-xeditable": "~0.1.8",
     "normalize-css": "~3.0.1",
-    "fontawesome": "~4.0.3",
+    "fontawesome": "~4.1.0",
     "compass-mixins": "~1.0.0",
     "angular-animate": "~1.2.16",
     "favico.js": "~0.3.4"

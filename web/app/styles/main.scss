@@ -1,5 +1,6 @@
 @import "compass-mixins/lib/compass/css3/transition";
 @import "compass-mixins/lib/compass/css3/box-sizing";
+@import "compass-mixins/lib/compass/css3/text-shadow";
 @import "compass-mixins/lib/compass/css3/filter";
 
 $new-message-height: 100px;
@@ -9,6 +10,7 @@ $topic-height: 50px;
 $light-color: #fefefe;
 $blue: #5192f2;
 $gray-color: #f4f4f4;
+$brand-orange: #ff662d;
 $serif-font-family: 'Droid Serif', 'Georgia', serif;
 $sans-font-family: 'Droid Sans', sans-serif;
 $pad: 15px;
@@ -154,23 +156,39 @@ a {
 .fa-user {
   line-height: inherit;
 }
+
+#new-messages-notification {
+  color: $brand-orange;
+  display: table-cell;
+  visibility: 0.5;
+  z-index: 999;
+  text-decoration: none;
+  border: none;
+  position: absolute;
+  bottom: $new-message-height + 40;
+  right: 40px;
+  cursor: pointer;
+}
+
 #new-message {
   position: absolute;
   bottom: 0;
-  padding: 15px 25px;
+  padding: 12px 25px;
   width: 100%;
   border-top: solid 1px rgba(228, 228, 228, 1);
   height: $new-message-height;
   background: $gray-color;
   z-index: 90;
-  input[type="text"] {
+  textarea {
     width: 90%;
     height: 90%;
     border: none;
     font-size: 1.2em;
+    line-height: 1.2em;
     float: left;
     padding: 0 15px;
     outline: none;
+    resize: none;
     background: none;
     &:focus, &:hover {
       border: none;
@@ -190,7 +208,7 @@ a {
     padding: 0;
     font-size: 2em;
     background: none;
-    color: #ff662d;
+    color: $brand-orange;
     &:hover {
       color: #ffa98f;
     }
@@ -295,6 +313,16 @@ a {
   background-color: #CA93D0;
 }
 
+#social-links {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  a {
+    margin: 0 4px;
+    border: none;
+    text-decoration: none;
+  }
+}
 #logo {
   font-family: $sans-font-family;
   line-height: 1.1em;
@@ -302,7 +330,7 @@ a {
   bottom: 0;
   padding: 15px;
   width: 100%;
-  height: 226px;
+  height: 245px;
   right: 0px;
   overflow: hidden;
   border-top: none;
