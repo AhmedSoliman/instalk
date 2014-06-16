@@ -4,4 +4,4 @@ window.Instalk ?= {}
 
 Instalk.Config =
   Transport:
-    url: "ws://instalk.im:9000/websocket"
+    url: "ws://localhost:9000/websocket"
