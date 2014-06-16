@@ -2,9 +2,9 @@
 
 The App is developed in two seperately sides, one for the back-end and the other is front-end, so it's easy to develope and run one side seperalty without the other.
 
-To install the front-end side, we are using some automated tools to run the and build the app so make sure to install [nodejs](http://nodejs.org/), [npm](https://www.npmjs.org/) and [grunt](http://gruntjs.com/getting-started)
+To install the front-end side, we are using some automated tools to run and build the app so make sure to install [nodejs](http://nodejs.org/), [npm](https://www.npmjs.org/) and [grunt](http://gruntjs.com/getting-started)
 
-After you make sure that all the above tools are setup, just follow the below simple steps to build.
+After you make installing the above tools, just follow the below simple steps to run the app.
 
 From inside the `/web` directory run the following
 

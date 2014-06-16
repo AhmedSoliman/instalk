@@ -6,10 +6,7 @@ Waffle Tasks [![Stories in Ready](https://badge.waffle.io/ahmedsoliman/instalk.p
 
 Open Source Group Chat Application built with Play + Akka
 
-### [Documentation](/docs)
-
 ### Dependencies
   - Cassandra
   - Java 7
   - Grunt / Bower
-
