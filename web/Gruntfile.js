@@ -70,26 +70,18 @@ module.exports = function (grunt) {
       livereload: {
         options: {
           open: true,
-          // middleware: function (connect, options) {
-          //             var middlewares = [];
-          //             var directory = options.directory || options.base[options.base.length - 1];
+          middleware: function (connect, options) {
+           var middlewares = [];
 
-          //             // enable Angular's HTML5 mode
-          //             middlewares.push(modRewrite(['!\\.html|\\.js|\\.svg|\\.css|\\.png$ /index.html [L]']));
-
-          //             if (!Array.isArray(options.base)) {
-          //               options.base = [options.base];
-          //             }
-          //             options.base.forEach(function(base) {
-          //               // Serve static files.
-          //               middlewares.push(connect.static(base));
-          //             });
-
-          //             // Make directory browse-able.
-          //             middlewares.push(connect.directory(directory));
-
-          //             return middlewares;
-          //           },
+           middlewares.push(modRewrite([
+                     '!/api|/images|\\.html|\\.js|\\.css|\\woff|\\ttf|\\swf$ /index.html'
+           ]));
+           options.base.forEach(function (base) {
+             // Serve static files.
+             middlewares.push(connect.static(base));
+         });
+         return middlewares;
+       },
           base: [
             '.tmp',
             '<%= yeoman.app %>'

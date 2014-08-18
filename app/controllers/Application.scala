@@ -17,9 +17,9 @@ package controllers
 
 import play.api.mvc._
 import play.api.libs.json._
-import scala.concurrent.Future
 import im.instalk.global.Instalk
 import scala.concurrent.duration._
+import scala.util.Right
 import akka.pattern.ask
 import akka.util.Timeout
 import im.instalk.actors.{ ClientManager, WebSocketActor}
@@ -34,9 +34,9 @@ object Application extends Controller {
     Ok("Go Away!")
   }
 
-  def websocket = WebSocket.async[String] {
+  def websocket = WebSocket.tryAccept[String] {
     request =>
-      val act = (globals.clientManager ? ClientManager.CreateClient(request)).mapTo[WebSocketActor.Actuator]
-      act.map(x => x.act)
+        val act = (globals.clientManager ? ClientManager.CreateClient(request)).mapTo[WebSocketActor.Actuator]
+        act.map(x => Right(x.act))
   }
 }
